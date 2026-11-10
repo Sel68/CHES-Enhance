@@ -1,0 +1,7 @@
+numpy>=1.26,<3
+jax==0.6.2
+jaxlib==0.6.2
+optax==0.2.8
+matplotlib>=3.9,<4
+pillow>=10
+pytest>=6.2.5
