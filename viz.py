@@ -1,228 +1,376 @@
-"""Replay JSON -> matplotlib video/GIF or dependency-free, self-contained HTML.
+"""Replay animation from the JSON event logs only (no simulator, no JAX, no GPU).
 
-No simulator, JAX, torch, or GPU is imported. HTML mode uses only the stdlib.
+  python viz.py --replay outputs/run/replays/Agent_LRU_tight_test0.json --mode mp4|html --fps 10
+  python viz.py --replay A.json B.json [C.json D.json] --mode html        # 2 or 4 panels in lockstep
+  python viz.py --scenarios --root outputs/run [--slots 200]               # the three showcase scenarios
+
+Scene: CPU node = square, GPU node = hexagon; disk bar under each node with cached images as
+coloured blocks (width = size / capacity), white outline = pinned by a running task, partial fill =
+download progress. Tasks (circle = CPU service, triangle = GPU service) fly from their origin to the
+chosen node; green flash = cache hit, orange ring = pull in progress, red = deadline missed.
+Evicted blocks fade out in red with the victim image id.
 """
 import argparse
 import json
 import math
-import os
 from pathlib import Path
 
-PALETTE = ["#56B4E9", "#E69F00", "#009E73", "#CC79A7", "#F0E442", "#0072B2", "#D55E00", "#88CCAA"]
+TRAVEL = 0.6          # visual flight time of a task (slots)
+FADE = 1.5            # eviction ghost lifetime (slots)
+OK, MISS, LATE, ACCENT = "#1baf7a", "#eb6834", "#e34948", "#2a78d6"
+INK, MUTED, SURFACE, NODE = "#0b0b0b", "#52514e", "#fcfcfb", "#d9d8d3"
 
 
-def load_panels(paths):
-    panels = []
-    for path in paths:
-        value = json.loads(Path(path).read_text())
-        panels.extend(value["panels"] if "panels" in value else [value])
-    if len(panels) not in (1, 2, 4):
-        raise ValueError("Provide 1, 2, or 4 panels")
-    if len({(p["trace"], p["slot_seconds"]) for p in panels}) != 1:
-        raise ValueError("Comparison panels must use the same trace and slot duration")
-    for p in panels:
-        if p["version"] != 1 or not p["frames"]:
-            raise ValueError("Unsupported or empty replay")
-    return panels
+def image_colors(n):
+    """Consistent per-image colours across every panel and every output (golden-angle hue walk)."""
+    import colorsys
+    out = []
+    for i in range(n):
+        h = (i * 0.618033988749895) % 1
+        l, s = (0.55, 0.65) if i % 3 == 0 else ((0.42, 0.7) if i % 3 == 1 else (0.68, 0.6))
+        r, g, b = colorsys.hls_to_rgb(h, l, s)
+        out.append("#%02x%02x%02x" % (int(r * 255), int(g * 255), int(b * 255)))
+    return out
 
 
-def visible_state(panel, t):
-    slot = min(panel["slots"] - 1, int(t / panel["slot_seconds"]))
-    frames = [f for f in panel["frames"] if f["slot"] <= slot]
-    frame = frames[-1] if frames else panel["frames"][0]
-    arrived = [e for e in panel["tasks"] if e["arrival"] <= t]
-    completed = [e for e in arrived if not e["rejected"] and e["finish"] <= t]
-    latency = sum(e["latency"] for e in completed) / max(1, len(completed))
-    hit = sum(e["hit"] for e in arrived) / max(1, len(arrived))
-    evictions = sum(len(e["evicted"]) for e in arrived)
-    ratio = sum(e["deadline_met"] for e in completed) / max(1, len(arrived))
-    return slot, frame, arrived, completed, (latency, hit, evictions, ratio)
+# ------------------------------------------------------------------------------------ preprocessing
+def prepare(path, slots=None):
+    """JSON log -> panel dict with tasks, cache residency intervals and per-slot metrics."""
+    raw = json.loads(Path(path).read_text())
+    S = min(slots or raw["slots"], raw["slots"])
+    tasks = []
+    for t in raw["tasks"]:
+        tid, slot, gpu, img, node, outcome, evicted, dls, dlr, fin, met, x, y, ddl = t
+        if slot >= S:
+            continue
+        tasks.append(dict(id=tid, t=float(slot), gpu=gpu, img=img, node=node, out=outcome, ev=evicted,
+                          dls=dls, dlr=dlr, fin=fin, met=met, x=x, y=y, ddl=ddl))
+    # Cache residency intervals per node, reconstructed from miss / eviction events.
+    entries, open_ = [], {}
+    for t in tasks:
+        if t["node"] < 0:
+            continue
+        for v in t["ev"]:
+            e = open_.pop((t["node"], v), None)
+            if e is None:                     # resident before the log window (not possible: caches start empty)
+                e = dict(node=t["node"], img=v, tin=0., dls=0., dlr=0.)
+                entries.append(e)
+            e["tout"] = t["t"]
+        if t["out"] == 3:
+            e = dict(node=t["node"], img=t["img"], tin=t["t"], dls=t["dls"], dlr=t["dlr"], tout=None)
+            open_[(t["node"], t["img"])] = e
+            entries.append(e)
+    for e in entries:
+        e["size"] = raw["images"][e["img"]]["size"]
+    # Per-slot cumulative metrics (computed from events known by the end of each slot).
+    metrics = []
+    for s in range(S):
+        now = s + 1.0
+        arrived = [t for t in tasks if t["t"] < now]
+        done = [t for t in arrived if t["node"] < 0 or (t["fin"] is not None and t["fin"] <= now)]
+        lat = [(t["fin"] - t["t"]) if t["node"] >= 0 else (t["ddl"] - t["t"] + 5) for t in done]
+        win = [t for t in arrived if t["t"] >= now - 10]
+        metrics.append(dict(lat=sum(lat) / len(lat) if lat else 0., hit=sum(t["out"] == 1 for t in arrived) / max(1, len(arrived)),
+                            ev=sum(len(t["ev"]) for t in arrived), ontime=sum(t["met"] for t in done) / max(1, len(done)),
+                            roll=sum(t["out"] == 1 for t in win) / max(1, len(win)), n=len(arrived)))
+    title = f"{raw['method']} · {raw['policy']} · {raw['disk']} disk ({100 * raw['disk_frac']:.0f}% of catalogue/node)"
+    return dict(title=title, method=raw["method"], policy=raw["policy"], disk=raw["disk"], slots=S, nodes=spread(raw["nodes"]),
+                capacity=raw["capacity"], images=raw["images"], tasks=tasks, entries=entries, metrics=metrics,
+                trace=raw.get("trace", ""))
 
 
-def export_video(panels, output, fps=10, slots=None):
-    os.environ.setdefault("MPLCONFIGDIR", "/tmp/ches-matplotlib")
+def spread(nodes, dx=13.0, dy=9.0, iters=300):
+    """Display-only layout: push apart nodes whose glyph + disk bar would overlap (simulation untouched)."""
+    pts = [[n["x"], n["y"]] for n in nodes]
+    for _ in range(iters):
+        moved = False
+        for i in range(len(pts)):
+            for j in range(i + 1, len(pts)):
+                ox, oy = dx - abs(pts[i][0] - pts[j][0]), dy - abs(pts[i][1] - pts[j][1])
+                if ox > 0 and oy > 0:
+                    moved = True
+                    if ox < oy * dx / dy:
+                        sgn = 1 if pts[i][0] >= pts[j][0] else -1
+                        pts[i][0] += sgn * ox / 2; pts[j][0] -= sgn * ox / 2
+                    else:
+                        sgn = 1 if pts[i][1] >= pts[j][1] else -1
+                        pts[i][1] += sgn * oy / 2; pts[j][1] -= sgn * oy / 2
+        for q in pts:
+            q[0], q[1] = min(94, max(6, q[0])), min(92, max(6, q[1]))
+        if not moved:
+            break
+    return [dict(n, x=round(q[0], 2), y=round(q[1], 2)) for n, q in zip(nodes, pts)]
+
+
+def state_at(P, t):
+    """Everything to draw at continuous time t (slots)."""
+    caches = [[] for _ in P["nodes"]]
+    ghosts = []
+    for e in P["entries"]:
+        if e["tin"] <= t and (e["tout"] is None or t < e["tout"]):
+            caches[e["node"]].append(e)
+        elif e["tout"] is not None and e["tout"] <= t < e["tout"] + FADE:
+            ghosts.append(e)
+    pinned = set()
+    live = []
+    for k in P["tasks"]:
+        if k["t"] > t:
+            break
+        end = k["fin"] if k["node"] >= 0 else k["t"] + TRAVEL + 1
+        if t < end + 0.3:
+            live.append(k)
+        if k["node"] >= 0 and k["t"] <= t < (k["fin"] or 0):
+            pinned.add((k["node"], k["img"]))
+    return caches, ghosts, pinned, live
+
+
+# ------------------------------------------------------------------------------------ matplotlib
+def render_video(panels, out, fps=10, frames_per_slot=4):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    from matplotlib.animation import FuncAnimation, FFMpegWriter, PillowWriter, writers
-    from matplotlib.patches import Rectangle, Circle, Arc
-    count = len(panels)
-    rows, cols = (2, 2) if count == 4 else (1, count)
-    fig, axes = plt.subplots(rows, cols, figsize=(7 * cols, 6.2 * rows), squeeze=False, facecolor="#0B1220")
-    fig.subplots_adjust(wspace=.08, hspace=.16, top=.93, bottom=.04, left=.025, right=.975)
-    duration = min(p["slots"] for p in panels)
-    if slots:
-        duration = min(duration, slots)
-    # 0.75 screen seconds per simulator slot; speed is explicit in HTML too.
-    frame_count = max(2, int(duration * .75 * fps))
-    def draw(frame_index):
-        t = (frame_index / (frame_count - 1)) * max(0., duration * panels[0]["slot_seconds"] - .001)
-        for ax, p in zip(axes.flat, panels):
-            ax.clear(); ax.set_facecolor("#111C2F")
-            ax.set_xlim(-5, 105); ax.set_ylim(-27, 112); ax.set_aspect("equal"); ax.axis("off")
-            slot, state, arrived, completed, counters = visible_state(p, t)
-            pinned_images = {(e["node"], e["image"]) for e in arrived if not e["rejected"] and e["finish"] > t}
-            ax.text(0, 108, f"{p['method']}  /  {p['policy']}", color="white", fontsize=13, weight="bold")
-            ax.text(0, 102, f"{p['disk']} disk ×{p['disk_scale']:.3f}    SLOT {slot:03d}    t={t:.1f}s", color="#94A3B8", fontsize=10)
-            ax.plot([0, 100], [99, 99], color="#293951", lw=1)
-            for n, cache in zip(p["nodes"], state["nodes"]):
-                x, y = n["x"], n["y"]
-                color = "#A9C4DC" if n["type"] == "CPU" else "#CC79A7"
-                ax.scatter([x], [y], marker="s" if n["type"] == "CPU" else "h", s=230, c=color, edgecolor="#DBEAFE", linewidth=.8, zorder=5)
-                ax.text(x, y + 4.2, f"{n['type'][0]}{n['id']}", ha="center", fontsize=7, color="#B9C8DA")
-                left, yy = x - 7, y - 6
-                ax.add_patch(Rectangle((left, yy), 14, 2.8, facecolor="#263349", edgecolor="#526379", lw=.7))
-                for c in cache:
-                    width = 14 * c["size"] / n["capacity"]
-                    progress = min(1., max(0., (t - c["start"]) / max(1e-9, c["ready"] - c["start"])))
-                    pinned = (n["id"], c["image"]) in pinned_images
-                    color = PALETTE[c["image"] % len(PALETTE)]
-                    ax.add_patch(Rectangle((left, yy), width, 2.8, facecolor=color, alpha=.2, edgecolor="none"))
-                    ax.add_patch(Rectangle((left, yy), width * progress, 2.8, facecolor=color, edgecolor="none"))
-                    ax.add_patch(Rectangle((left, yy), width, 2.8, fill=False, edgecolor="white" if pinned else "#111C2F", lw=1.2 if pinned else .4))
-                    left += width
-            for e in arrived:
-                age = t - e["arrival"]
-                if e["node"] < 0:
-                    if age < p["slot_seconds"]:
-                        ax.scatter(*e["origin"], c="#EE6677", marker="x", s=36)
+    from matplotlib import animation
+    from matplotlib.patches import Rectangle, RegularPolygon, Circle, Wedge
+    colors = image_colors(len(panels[0]["images"]))
+    n = len(panels)
+    rows, cols = (1, n) if n <= 2 else (2, 2)
+    fig = plt.figure(figsize=(7.0 * cols, 7.4 * rows), facecolor=SURFACE)
+    gs = fig.add_gridspec(rows * 6, cols, hspace=0.45, wspace=0.06, left=.02, right=.98, top=.93 if rows == 1 else .95,
+                          bottom=.07 if rows == 1 else .04)
+    fig.text(.5, .008, "■ CPU node   ⬢ GPU node   ● CPU service   ▲ GPU service   green ring = cache hit   orange arc = image pull"
+             "   red = evicted image / missed deadline   black outline = pinned   bar = disk (block width = image size)",
+             ha="center", color=MUTED, fontsize=8.5)
+    scenes, infos, sparks = [], [], []
+    for i in range(n):
+        r, c = divmod(i, cols)
+        scenes.append(fig.add_subplot(gs[r * 6:r * 6 + 5, c]))
+        sub = gs[r * 6 + 5, c].subgridspec(1, 2, width_ratios=(3, 1), wspace=0.05)
+        infos.append(fig.add_subplot(sub[0]))
+        sparks.append(fig.add_subplot(sub[1]))
+    S = min(p["slots"] for p in panels)
+    total = S * frames_per_slot
+    sup = fig.suptitle("", color=INK, fontsize=13)
+
+    def draw(f):
+        t = f / frames_per_slot
+        sup.set_text(f"Trace {panels[0]['trace']}   ·   slot {int(t):3d} / {S}")
+        for P, ax, ai, sp in zip(panels, scenes, infos, sparks):
+            ax.clear(); ai.clear(); sp.clear()
+            ax.set_xlim(-2, 104); ax.set_ylim(106, -4); ax.set_aspect("equal"); ax.axis("off")
+            ax.set_facecolor(SURFACE)
+            ax.set_title(P["title"], color=INK, fontsize=10.5)
+            caches, ghosts, pinned, live = state_at(P, t)
+            cap = P["capacity"]
+            for ni, nd in enumerate(P["nodes"]):
+                x, y = nd["x"], nd["y"]
+                if nd["gpu"]:
+                    ax.add_patch(RegularPolygon((x, y), 6, radius=3.0, facecolor=NODE, edgecolor=MUTED, lw=1))
+                else:
+                    ax.add_patch(Rectangle((x - 2.4, y - 2.4), 4.8, 4.8, facecolor=NODE, edgecolor=MUTED, lw=1))
+                bw, bx, by = 10., x - 5., y + 3.6
+                ax.add_patch(Rectangle((bx, by), bw, 1.8, facecolor="white", edgecolor=MUTED, lw=.6))
+                off = 0.
+                for e in sorted(caches[ni], key=lambda e: e["tin"]):
+                    w = bw * e["size"] / cap
+                    prog = 1. if e["dlr"] is None or t >= e["dlr"] else max(0., (t - e["dls"]) / max(1e-6, e["dlr"] - e["dls"]))
+                    ax.add_patch(Rectangle((bx + off, by), w, 1.8, facecolor=colors[e["img"]], alpha=.28, lw=0))
+                    ax.add_patch(Rectangle((bx + off, by + 1.8 * (1 - prog)), w, 1.8 * prog, facecolor=colors[e["img"]], lw=0))
+                    if (ni, e["img"]) in pinned:
+                        ax.add_patch(Rectangle((bx + off, by), w, 1.8, fill=False, edgecolor=INK, lw=1.1))
+                    off += w
+            for e in ghosts:
+                nd = P["nodes"][e["node"]]
+                a = max(0., 1 - (t - e["tout"]) / FADE)
+                ax.add_patch(Rectangle((nd["x"] - 5, nd["y"] + 3.6), 10 * e["size"] / cap, 1.8, facecolor=LATE, alpha=.8 * a, lw=0))
+                ax.text(nd["x"] + 5.5, nd["y"] - 3, f"−{e['img']}", color=LATE, alpha=a, fontsize=8, weight="bold")
+            for k in live:
+                if k["node"] < 0:
                     continue
-                n = p["nodes"][e["node"]]
-                visual_travel = min(.7 * p["slot_seconds"], max(.45 * p["slot_seconds"], e["upload_finish"] - e["arrival"]))
-                progress = min(1., age / visual_travel)
-                x = e["origin"][0] + (n["x"] - e["origin"][0]) * progress
-                y = e["origin"][1] + (n["y"] - e["origin"][1]) * progress
-                late = t > e["deadline"] and not e["deadline_met"]
-                if age < visual_travel or e["finish"] > t or t - e["finish"] < .8:
-                    ax.plot([e["origin"][0], n["x"]], [e["origin"][1], n["y"]], color=PALETTE[e["image"] % len(PALETTE)], alpha=.12, lw=.7)
-                    ax.scatter([x], [y], marker="^" if e["type"] == "GPU" else "o", c="#EE6677" if late else PALETTE[e["image"] % len(PALETTE)], s=25, edgecolor="white", linewidth=.3, zorder=8)
-                if e["hit"] and visual_travel <= age < visual_travel + p["slot_seconds"] * .6:
-                    ax.add_patch(Circle((n["x"], n["y"]), 4 + age, fill=False, edgecolor="#009E73", lw=2, alpha=max(0, 1 - (age - visual_travel) / (p["slot_seconds"] * .6))))
-                elif not e["hit"] and age >= visual_travel and e["download_finish"] > t:
-                    ax.add_patch(Circle((n["x"], n["y"]), 4.2, fill=False, edgecolor="#E69F00", lw=1.5, alpha=.7))
-                    q = min(1., max(0., (t - e["download_start"]) / max(1e-9, e["download_finish"] - e["download_start"])))
-                    ax.add_patch(Arc((n["x"], n["y"]), 8.4, 8.4, theta1=90, theta2=90 + 360 * q, edgecolor="#F0E442", lw=2))
-                if age < p["slot_seconds"]:
-                    for vi, victim in enumerate(e["evicted"]):
-                        ax.text(n["x"], n["y"] - 11 - 3 * vi - age * 2, f"− image {victim['image']}", color="#EE6677", fontsize=8, ha="center", alpha=max(0, 1 - age / p["slot_seconds"]))
-                        ax.add_patch(Rectangle((n["x"] - 7, n["y"] - 6), 14 * victim["size"] / n["capacity"], 2.8, facecolor="#EE6677", alpha=.5 * max(0, 1 - age / p["slot_seconds"])))
-            latency, hit, evicted, ratio = counters
-            ax.text(0, -8, f"{latency:5.1f}s latency     {hit:5.1%} hit     {evicted:3d} evictions", color="white", fontsize=10, family="monospace")
-            ax.text(0, -15, f"On-time / arrived: {ratio:.1%}   •   completed: {len(completed)}/{len(arrived)}", color="#94A3B8", fontsize=9)
-            history = [sum(z["hit"] for z in arrived[max(0, i - 19):i + 1]) / min(20, i + 1) for i in range(len(arrived))]
-            if history:
-                ax.plot([60 + 40 * i / max(1, len(history) - 1) for i in range(len(history))], [-25 + 7 * h for h in history], color="#56B4E9", lw=1)
-            ax.text(0, -24, "CPU square | GPU hexagon | white outline = pinned", color="#64748B", fontsize=7)
+                nd = P["nodes"][k["node"]]
+                u = min(1., (t - k["t"]) / TRAVEL)
+                ang = (k["id"] * 2.39996) % (2 * math.pi)
+                tx, ty = nd["x"] + 4.2 * math.cos(ang), nd["y"] + 4.2 * math.sin(ang)
+                px, py = k["x"] + (tx - k["x"]) * u, k["y"] + (ty - k["y"]) * u
+                late = t > k["ddl"] and (k["fin"] is None or t < k["fin"] or not k["met"])
+                col = LATE if late else colors[k["img"]]
+                if k["gpu"]:
+                    ax.add_patch(RegularPolygon((px, py), 3, radius=1.3, facecolor=col, edgecolor="white", lw=.6))
+                else:
+                    ax.add_patch(Circle((px, py), 1.0, facecolor=col, edgecolor="white", lw=.6))
+                if u >= 1:
+                    if k["out"] == 1 and t - k["t"] < TRAVEL + .5:
+                        ax.add_patch(Circle((nd["x"], nd["y"]), 3.8 + 3 * (t - k["t"] - TRAVEL), fill=False, edgecolor=OK, lw=2,
+                                            alpha=max(0, 1 - 2 * (t - k["t"] - TRAVEL))))
+                    elif k["out"] in (2, 3) and k["dlr"] and t < k["dlr"]:
+                        prog = max(0., min(1., (t - k["dls"]) / max(1e-6, k["dlr"] - k["dls"]))) if k["dls"] is not None else 0
+                        ax.add_patch(Circle((px, py), 1.9, fill=False, edgecolor=MISS, lw=.8, alpha=.5))
+                        ax.add_patch(Wedge((px, py), 2.1, 90 - 360 * prog, 90, width=.5, facecolor=MISS, lw=0))
+            m = P["metrics"][min(int(t), len(P["metrics"]) - 1)]
+            ai.axis("off")
+            ai.text(0, .55, f"avg latency {m['lat']:.2f}   hit rate {m['hit']:.1%}\nevictions {m['ev']:d}   on-time {m['ontime']:.1%}",
+                    color=INK, fontsize=10, va="center", family="monospace")
+            roll = [q["roll"] for q in P["metrics"][:int(t) + 1]]
+            sp.plot(roll, color=ACCENT, lw=1.5)
+            sp.set_xlim(0, S); sp.set_ylim(0, 1); sp.set_xticks([]); sp.set_yticks([0, 1])
+            sp.tick_params(labelsize=7, colors=MUTED)
+            for s in ("top", "right"):
+                sp.spines[s].set_visible(False)
+            sp.set_title("rolling hit rate", fontsize=7, color=MUTED)
         return []
-    animation = FuncAnimation(fig, draw, frames=frame_count, interval=1000 / fps, blit=False)
-    output = Path(output)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    if writers.is_available("ffmpeg"):
-        output = output.with_suffix(".mp4")
-        animation.save(output, writer=FFMpegWriter(fps=fps, codec="libx264", extra_args=["-pix_fmt", "yuv420p", "-threads", "2"]), dpi=110)
-    else:
-        output = output.with_suffix(".gif")
-        animation.save(output, writer=PillowWriter(fps=fps), dpi=90)
+
+    anim = animation.FuncAnimation(fig, draw, frames=total, interval=1000 / fps, blit=False)
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        try:
+            import imageio_ffmpeg
+            matplotlib.rcParams["animation.ffmpeg_path"] = imageio_ffmpeg.get_ffmpeg_exe()
+        except ImportError:
+            pass
+        if not animation.FFMpegWriter.isAvailable():
+            raise RuntimeError("ffmpeg unavailable")
+        anim.save(out.with_suffix(".mp4"), writer=animation.FFMpegWriter(fps=fps, bitrate=2400), dpi=90)
+        result = out.with_suffix(".mp4")
+    except Exception as exc:                       # GIF fallback (Pillow)
+        print(f"  mp4 failed ({exc}); writing GIF", flush=True)
+        anim.save(out.with_suffix(".gif"), writer=animation.PillowWriter(fps=fps), dpi=60)
+        result = out.with_suffix(".gif")
     plt.close(fig)
-    print(f"Video: {output}", flush=True)
-    return output
+    print(f"  wrote {result}", flush=True)
+    return result
 
 
-HTML = r'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CHES · scheduling replay</title><style>
-*{box-sizing:border-box}body{margin:0;background:#080f1c;color:#dbe7f3;font:14px system-ui,sans-serif}main{max-width:1550px;margin:auto;padding:28px}
-header{display:flex;align-items:end;justify-content:space-between;gap:16px}h1{font-size:28px;margin:4px 0 8px;font-weight:650;letter-spacing:-1px}.eyebrow{font-size:11px;letter-spacing:3px;color:#56b4e9}p{color:#94a3b8;margin:5px 0 18px}.badge{border:1px solid #26384f;border-radius:20px;padding:7px 12px;color:#b2c9dd;font-size:11px}
-.toolbar{display:flex;gap:16px;align-items:center;background:#111c2f;border:1px solid #25344a;padding:14px 18px;border-radius:12px;margin:10px 0 18px}button,select{background:#1c3049;color:white;border:1px solid #3b516c;border-radius:7px;padding:8px 14px;cursor:pointer}input{flex:1;accent-color:#56b4e9;min-width:50px}#stamp{font-variant-numeric:tabular-nums;min-width:130px}#panels{display:grid;gap:16px;grid-template-columns:repeat(var(--cols),minmax(0,1fr))}.panel{background:#111c2f;border:1px solid #25344a;border-radius:14px;overflow:hidden}.heading{padding:17px 20px 0;display:flex;justify-content:space-between;align-items:center}.heading strong{font-size:17px}.heading span{color:#94a3b8;font-size:12px}canvas{display:block;width:100%;aspect-ratio:1.25}.counters{display:grid;grid-template-columns:repeat(4,1fr);padding:12px 18px;background:#0d1829;border-top:1px solid #25344a;gap:6px}.metric b{display:block;font-size:20px;color:white;font-variant-numeric:tabular-nums}.metric small{font-size:10px;letter-spacing:.6px;color:#94a3b8}.legend{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0;color:#94a3b8;font-size:12px}footer{font-size:11px;color:#73859b;line-height:1.8}.key{padding:2px 6px;background:#1c3049;border-radius:4px}@media(max-width:800px){main{padding:14px}#panels{grid-template-columns:1fr}header{align-items:start}.badge{display:none}.toolbar{gap:8px;padding:10px}.metric b{font-size:16px}}
-</style><main><header><div><div class="eyebrow">HETEROGENEOUS EDGE / LIVE REPLAY</div><h1>Where the next service lands.</h1><p>Shared trace. Visible cache pressure. Every placement, pull and eviction.</p></div><div class="badge">OFFLINE · SELF-CONTAINED</div></header>
-<div class="toolbar"><button id="play">Pause</button><input id="seek" type="range" min="0" step="0.01" value="0" aria-label="Replay time"><span id="stamp"></span><select id="speed" aria-label="Playback speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select></div>
-<div id="panels"></div><div class="legend"><span>□ CPU node</span><span>⬡ GPU node</span><span>● CPU task · ▲ GPU task</span><span style="color:#009e73">◯ Cache hit</span><span style="color:#e69f00">◯ Pull / waiting</span><span style="color:#ee6677">■ Eviction / missed deadline</span><span>White border = pinned</span></div>
-<footer id="note"></footer><footer>Bars show reserved disk space; their fill shows download progress. Task travel is slowed for visibility. Live latency uses completed tasks; hit rate uses arrivals; on-time is completed before deadline / arrivals. The sparkline uses the last 20 arrivals. <span class="key">Space</span> play/pause · drag slider to seek.</footer></main>
-<script id="replay-data" type="application/json">__DATA__</script><script>
-'use strict';const panels=JSON.parse(document.getElementById('replay-data').textContent),palette=__PALETTE__;
-const limit=Math.min(...panels.map(p=>p.slots)),dt=panels[0].slot_seconds,end=limit*dt-.001;
-const container=document.getElementById('panels');container.style.setProperty('--cols',panels.length===1?1:2);
-document.getElementById('note').textContent=`Trace ${panels[0].trace} · ${limit} recorded slots · image colors are fixed across panels · ${panels[0].trace.startsWith('test')?'held-out trace':'request trace'}.`;
-const views=panels.map(p=>{let el=document.createElement('section');el.className='panel';el.innerHTML='<div class="heading"><strong></strong><span></span></div><canvas></canvas><div class="counters">'+['AVG LATENCY','CACHE HIT','EVICTIONS','ON-TIME / ARRIVED'].map(x=>`<div class="metric"><b>—</b><small>${x}</small></div>`).join('')+'</div>';el.querySelector('strong').textContent=p.method+' / '+p.policy;el.querySelector('span').textContent=p.disk+' disk ×'+p.disk_scale.toFixed(3);container.append(el);return {p,canvas:el.querySelector('canvas'),metrics:[...el.querySelectorAll('.metric b')]}});
-function poly(c,x,y,r,count,rotation=0){c.beginPath();for(let i=0;i<count;i++){let a=2*Math.PI*i/count+rotation;c.lineTo(x+r*Math.cos(a),y+r*Math.sin(a))}c.closePath()}
-function render(v,time){const {p,canvas,metrics}=v,dpr=window.devicePixelRatio||1,w=canvas.clientWidth;
-const W=1000,H=800;const rw=Math.round(w*dpr),rh=Math.round(w*.8*dpr);if(canvas.width!==rw||canvas.height!==rh){canvas.width=rw;canvas.height=rh}const c=canvas.getContext('2d');c.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);c.clearRect(0,0,W,H);
-const X=x=>65+x*8.7,Y=y=>680-y*6.4,color=i=>palette[i%palette.length],slot=Math.min(p.slots-1,Math.floor(time/dt));
-let f=p.frames[0];for(const q of p.frames){if(q.slot>slot)break;f=q}const arrived=p.tasks.filter(e=>e.arrival<=time),done=arrived.filter(e=>!e.rejected&&e.finish<=time),pins=new Set(arrived.filter(e=>!e.rejected&&e.finish>time).map(e=>e.node+':'+e.image));
-c.strokeStyle='#1c2a3e';c.lineWidth=1;for(let x=0;x<=100;x+=10){c.beginPath();c.moveTo(X(x),Y(0));c.lineTo(X(x),Y(100));c.stroke()}for(let y=0;y<=100;y+=10){c.beginPath();c.moveTo(X(0),Y(y));c.lineTo(X(100),Y(y));c.stroke()}
-c.font='12px system-ui';c.fillStyle='#61758e';c.fillText('NODE POSITIONS · x / y',X(0),24);c.textAlign='right';c.fillText('SLOT '+String(slot).padStart(3,'0'),X(100),24);c.textAlign='left';
-for(let ni=0;ni<p.nodes.length;ni++){let n=p.nodes[ni],x=X(n.x),y=Y(n.y);c.fillStyle=n.type==='CPU'?'#a9c4dc':'#cc79a7';c.strokeStyle='#dbeafe';c.lineWidth=1.5;poly(c,x,y,16,n.type==='CPU'?4:6,n.type==='CPU'?Math.PI/4:0);c.fill();c.stroke();c.fillStyle='#b9c8da';c.textAlign='center';c.font='11px system-ui';c.fillText(n.type[0]+n.id,x,y-24);let left=x-38,yy=y+23;c.fillStyle='#263349';c.fillRect(left,yy,76,10);c.strokeStyle='#526379';c.strokeRect(left,yy,76,10);
-for(const b of f.nodes[ni]){let width=76*b.size/n.capacity,progress=Math.max(0,Math.min(1,(time-b.start)/(b.ready-b.start||1))),pinned=pins.has(n.id+':'+b.image);c.globalAlpha=.2;c.fillStyle=color(b.image);c.fillRect(left,yy,width,10);c.globalAlpha=1;c.fillRect(left,yy,width*progress,10);c.lineWidth=pinned?1.5:.5;c.strokeStyle=pinned?'white':'#111c2f';c.strokeRect(left,yy,width,10);left+=width} }
-for(const e of arrived){let age=time-e.arrival;if(e.node<0){if(age<dt){c.fillStyle='#ee6677';c.textAlign='center';c.fillText('×',X(e.origin[0]),Y(e.origin[1]))}continue}let n=p.nodes[e.node],nx=X(n.x),ny=Y(n.y),travel=Math.min(.7*dt,Math.max(.45*dt,e.upload_finish-e.arrival)),q=Math.min(1,age/travel),x=X(e.origin[0])+(nx-X(e.origin[0]))*q,y=Y(e.origin[1])+(ny-Y(e.origin[1]))*q,late=time>e.deadline&&!e.deadline_met;
-if(age<travel||e.finish>time||time-e.finish<.8){c.globalAlpha=.18;c.strokeStyle=color(e.image);c.lineWidth=1;c.beginPath();c.moveTo(X(e.origin[0]),Y(e.origin[1]));c.lineTo(nx,ny);c.stroke();c.globalAlpha=1;c.fillStyle=late?'#ee6677':color(e.image);c.strokeStyle='white';c.lineWidth=.5;if(e.type==='GPU')poly(c,x,y,5,3,-Math.PI/2);else{c.beginPath();c.arc(x,y,4,0,Math.PI*2)}c.fill();c.stroke()}
-if(e.hit&&age>=travel&&age<travel+dt*.6){c.globalAlpha=Math.max(0,1-(age-travel)/(dt*.6));c.strokeStyle='#009e73';c.lineWidth=3;c.beginPath();c.arc(nx,ny,20+age*5,0,Math.PI*2);c.stroke();c.globalAlpha=1}else if(!e.hit&&age>=travel&&e.download_finish>time){let q=Math.max(0,Math.min(1,(time-e.download_start)/(e.download_finish-e.download_start||1)));c.strokeStyle='#694b20';c.lineWidth=3;c.beginPath();c.arc(nx,ny,23,0,Math.PI*2);c.stroke();c.strokeStyle='#e69f00';c.beginPath();c.arc(nx,ny,23,-Math.PI/2,-Math.PI/2+q*2*Math.PI);c.stroke()}
-if(age<dt)for(const [bi,b] of e.evicted.entries()){c.globalAlpha=Math.max(0,1-age/dt);c.fillStyle='#ee6677';c.font='12px system-ui';c.textAlign='center';c.fillText('− image '+b.image,nx,ny+52+bi*14+age*5);c.globalAlpha*=.6;c.fillRect(nx-38,ny+23,76*b.size/n.capacity,10);c.globalAlpha=1}}
-let avg=done.reduce((a,e)=>a+e.latency,0)/(done.length||1),hit=arrived.filter(e=>e.hit).length/(arrived.length||1),ev=arrived.reduce((a,e)=>a+e.evicted.length,0),ratio=done.filter(e=>e.deadline_met).length/(arrived.length||1);[avg.toFixed(1)+'s',(100*hit).toFixed(1)+'%',ev,(100*ratio).toFixed(1)+'%'].forEach((x,i)=>metrics[i].textContent=x);
-c.fillStyle='#73859b';c.textAlign='left';c.font='12px system-ui';c.fillText('ROLLING CACHE HIT · 20 REQUESTS',65,740);c.strokeStyle='#56b4e9';c.lineWidth=2;c.beginPath();arrived.forEach((e,i)=>{let start=Math.max(0,i-19),hit=arrived.slice(start,i+1).filter(t=>t.hit).length/(i-start+1);c.lineTo(430+500*i/Math.max(1,arrived.length-1),770-hit*45)});c.stroke();c.fillStyle='#73859b';c.fillText(done.length+' completed / '+arrived.length+' arrived',65,767)}
-let time=0,playing=true,last=null;const seek=document.getElementById('seek'),play=document.getElementById('play');seek.max=end;
-function draw(){for(const v of views)render(v,time);seek.value=time;document.getElementById('stamp').textContent='Slot '+Math.floor(time/dt)+' · '+time.toFixed(1)+'s'}
-function toggle(){playing=!playing;play.textContent=playing?'Pause':'Play';if(playing&&time>=end)time=0}play.onclick=toggle;seek.oninput=()=>{time=Number(seek.value);draw()};window.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='INPUT'&&e.target.tagName!=='SELECT'){e.preventDefault();toggle()}});window.addEventListener('resize',draw);
-function tick(now){const needsDraw=playing;if(last!==null&&playing){time=Math.min(end,time+(now-last)/1000*dt/.75*Number(document.getElementById('speed').value));if(time>=end){playing=false;play.textContent='Play'}}last=now;if(needsDraw)draw();requestAnimationFrame(tick)}requestAnimationFrame(tick);
-</script></html>'''
+# ------------------------------------------------------------------------------------ HTML
+HTML = r"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CHES Replay</title><style>
+:root{--surface:#fcfcfb;--panel:#ffffff;--ink:#0b0b0b;--muted:#52514e;--line:#e4e3df;--node:#d9d8d3;--accent:#2a78d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--surface:#1a1a19;--panel:#222220;--ink:#f0efec;--muted:#c3c2b7;--line:#3a3936;--node:#4a4945;--accent:#3987e5}}
+:root[data-theme="dark"]{--surface:#1a1a19;--panel:#222220;--ink:#f0efec;--muted:#c3c2b7;--line:#3a3936;--node:#4a4945;--accent:#3987e5}
+body{margin:0;background:var(--surface);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:12px 16px 4px}h1{font-size:18px;margin:0}p.sub{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 16px;position:sticky;top:0;background:var(--surface);z-index:2;border-bottom:1px solid var(--line)}
+button,select{font:inherit;padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}#slot{font-variant-numeric:tabular-nums;min-width:110px}
+.grid{display:grid;gap:12px;padding:12px 16px;grid-template-columns:repeat(var(--cols),minmax(0,1fr))}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.card h2{font-size:13.5px;margin:2px 0 4px;font-weight:600}canvas{width:100%;display:block}
+.stats{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:6px;align-items:end;margin-top:4px}
+.stat b{display:block;font-size:16px;font-variant-numeric:tabular-nums}.stat span{font-size:11px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:0 16px 14px;color:var(--muted);font-size:12px}
+.legend i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px;border-radius:2px}
+</style></head><body>
+<header><h1>CHES scheduling replay</h1><p class="sub" id="sub"></p></header>
+<div class="bar"><button id="play">▶ Play</button><input type="range" id="seek" min="0" step="0.01" value="0">
+<span id="slot"></span><label>speed <select id="speed"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option><option value="8">8×</option></select></label></div>
+<div class="grid" id="grid"></div>
+<div class="legend"><span>■ CPU node</span><span>⬢ GPU node</span><span>● CPU service</span><span>▲ GPU service</span>
+<span><i style="background:#1baf7a"></i>cache hit</span><span><i style="background:#eb6834"></i>image pull in progress</span>
+<span><i style="background:#e34948"></i>evicted / deadline missed</span><span><i style="border:2px solid var(--ink);box-sizing:border-box"></i>pinned image</span>
+<span>disk bar = node capacity; block width = image size; block colour = image id (same in every panel)</span></div>
+<script>
+const D=__DATA__;const TRAVEL=0.6,FADE=1.5,OK="#1baf7a",MISS="#eb6834",LATE="#e34948";
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const S=Math.min(...D.panels.map(p=>p.slots));const grid=document.getElementById("grid");
+grid.style.setProperty("--cols",D.panels.length===1?1:2);
+document.getElementById("sub").textContent=D.subtitle;
+const seek=document.getElementById("seek");seek.max=S-0.01;
+const views=D.panels.map((P,i)=>{const c=document.createElement("div");c.className="card";
+c.innerHTML=`<h2>${P.title}</h2><canvas></canvas><div class="stats"><div class="stat"><b>–</b><span>avg latency (slots)</span></div><div class="stat"><b>–</b><span>hit rate</span></div><div class="stat"><b>–</b><span>evictions</span></div><div class="stat"><b>–</b><span>on-time</span></div><div class="stat"><canvas class="spark" height="34"></canvas><span>rolling hit rate</span></div></div>`;
+grid.appendChild(c);return{P,cv:c.querySelector("canvas"),sp:c.querySelector(".spark"),st:[...c.querySelectorAll(".stat b")]};});
+function fit(cv,h){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=r.width*d;cv.height=(h||r.width*0.95)*d;cv.style.height=(h||r.width*0.95)+"px";const g=cv.getContext("2d");g.setTransform(d,0,0,d,0,0);return[g,r.width];}
+function hex(g,x,y,r){g.beginPath();for(let k=0;k<6;k++){const a=Math.PI/3*k+Math.PI/6;g.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));}g.closePath();}
+function tri(g,x,y,r){g.beginPath();for(let k=0;k<3;k++){const a=-Math.PI/2+2*Math.PI/3*k;g.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));}g.closePath();}
+function draw(t){document.getElementById("slot").textContent=`slot ${Math.floor(t)} / ${S}`;
+for(const V of views){const P=V.P;const[g,W]=fit(V.cv);const s=W/108,X=x=>(x+2)*s,Y=y=>(y+4)*s;
+g.fillStyle=css("--panel");g.fillRect(0,0,W,W);const cap=P.capacity;const pinned=new Set();const live=[];
+for(const k of P.tasks){if(k.t>t)break;const end=k.node>=0?k.fin:k.t+TRAVEL+1;if(t<end+0.3)live.push(k);if(k.node>=0&&k.t<=t&&t<(k.fin||0))pinned.add(k.node*1000+k.img);}
+P.nodes.forEach((nd,ni)=>{g.fillStyle=css("--node");g.strokeStyle=css("--muted");g.lineWidth=1;
+if(nd.gpu){hex(g,X(nd.x),Y(nd.y),3*s);g.fill();g.stroke();}else{g.fillRect(X(nd.x-2.4),Y(nd.y-2.4),4.8*s,4.8*s);g.strokeRect(X(nd.x-2.4),Y(nd.y-2.4),4.8*s,4.8*s);}
+const bx=nd.x-5,by=nd.y+3.6;g.fillStyle="#fff";g.fillRect(X(bx),Y(by),10*s,1.8*s);g.lineWidth=.6;g.strokeRect(X(bx),Y(by),10*s,1.8*s);
+let off=0;for(const e of P.entries){if(e.node!==ni||e.tin>t||(e.tout!==null&&t>=e.tout))continue;const w=10*e.size/cap;
+const prog=(e.dlr===null||t>=e.dlr)?1:Math.max(0,(t-e.dls)/Math.max(1e-6,e.dlr-e.dls));g.globalAlpha=.28;g.fillStyle=D.colors[e.img];g.fillRect(X(bx+off),Y(by),w*s,1.8*s);
+g.globalAlpha=1;g.fillRect(X(bx+off),Y(by+1.8*(1-prog)),w*s,1.8*prog*s);if(pinned.has(ni*1000+e.img)){g.strokeStyle=css("--ink");g.lineWidth=1.2;g.strokeRect(X(bx+off),Y(by),w*s,1.8*s);}off+=w;}});
+for(const e of P.entries){if(e.tout===null||t<e.tout||t>=e.tout+FADE)continue;const nd=P.nodes[e.node],a=1-(t-e.tout)/FADE;g.globalAlpha=.85*a;g.fillStyle=LATE;
+g.fillRect(X(nd.x-5),Y(nd.y+3.6),10*e.size/cap*s,1.8*s);g.font=`bold ${Math.max(9,2.4*s)}px system-ui`;g.fillText("−"+e.img,X(nd.x+5.5),Y(nd.y-3));g.globalAlpha=1;}
+for(const k of live){if(k.node<0)continue;const nd=P.nodes[k.node];const u=Math.min(1,(t-k.t)/TRAVEL);const ang=(k.id*2.39996)%(2*Math.PI);
+const tx=nd.x+4.2*Math.cos(ang),ty=nd.y+4.2*Math.sin(ang);const px=k.x+(tx-k.x)*u,py=k.y+(ty-k.y)*u;
+const late=t>k.ddl&&(k.fin===null||t<k.fin||!k.met);g.fillStyle=late?LATE:D.colors[k.img];g.strokeStyle="#fff";g.lineWidth=1;
+if(k.gpu){tri(g,X(px),Y(py),1.4*s);}else{g.beginPath();g.arc(X(px),Y(py),1.05*s,0,7);}g.fill();g.stroke();
+if(u>=1){const dt=t-k.t-TRAVEL;if(k.out===1&&dt<.5){g.globalAlpha=Math.max(0,1-2*dt);g.strokeStyle=OK;g.lineWidth=2.5;g.beginPath();g.arc(X(nd.x),Y(nd.y),(3.8+3*dt)*s,0,7);g.stroke();g.globalAlpha=1;}
+else if((k.out===2||k.out===3)&&k.dlr&&t<k.dlr){const pr=Math.max(0,Math.min(1,(t-k.dls)/Math.max(1e-6,k.dlr-k.dls)));g.strokeStyle=MISS;g.lineWidth=.8;g.globalAlpha=.45;g.beginPath();g.arc(X(px),Y(py),2*s,0,7);g.stroke();g.globalAlpha=1;g.lineWidth=2.4;g.beginPath();g.arc(X(px),Y(py),2*s,-Math.PI/2,-Math.PI/2+2*Math.PI*pr);g.stroke();}}}
+const m=P.metrics[Math.min(Math.floor(t),P.metrics.length-1)];V.st[0].textContent=m.lat.toFixed(2);V.st[1].textContent=(100*m.hit).toFixed(1)+"%";V.st[2].textContent=m.ev;V.st[3].textContent=(100*m.ontime).toFixed(1)+"%";
+const[sg,sw]=fit(V.sp,34);sg.clearRect(0,0,sw,34);sg.strokeStyle=css("--line");sg.strokeRect(0,1,sw,32);sg.strokeStyle=css("--accent");sg.lineWidth=1.6;sg.beginPath();
+P.metrics.slice(0,Math.floor(t)+1).forEach((q,i)=>{const x=i/S*sw,y=33-32*q.roll;i?sg.lineTo(x,y):sg.moveTo(x,y);});sg.stroke();}}
+let t=0,playing=false,last=null;const btn=document.getElementById("play");
+btn.onclick=()=>{playing=!playing;btn.textContent=playing?"❚❚ Pause":"▶ Play";last=null;if(playing&&t>=S-0.02)t=0;requestAnimationFrame(loop);};
+seek.oninput=()=>{t=+seek.value;draw(t);};
+function loop(ts){if(!playing)return;if(last!==null){t+=(ts-last)/1000*(+document.getElementById("speed").value)*1.33;}last=ts;
+if(t>=S-0.01){t=S-0.01;playing=false;btn.textContent="▶ Play";}seek.value=t;draw(t);if(playing)requestAnimationFrame(loop);}
+addEventListener("resize",()=>draw(t));draw(0);
+</script></body></html>"""
 
 
-def export_html(panels, output, slots=None):
-    if slots:
-        panels = [dict(p, slots=min(slots, p["slots"])) for p in panels]
-    html = HTML.replace("__DATA__", json.dumps(panels, separators=(",", ":"), allow_nan=False).replace("<", "\\u003c"))
-    html = html.replace("__PALETTE__", json.dumps(PALETTE))
-    output = Path(output).with_suffix(".html")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(html)
-    print(f"HTML: {output}", flush=True)
-    return output
+def render_html(panels, out, subtitle=""):
+    data = dict(panels=[{k: P[k] for k in ("title", "slots", "nodes", "capacity", "tasks", "entries", "metrics")} for P in panels],
+                colors=image_colors(len(panels[0]["images"])), subtitle=subtitle)
+    out = Path(out).with_suffix(".html")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(HTML.replace("__DATA__", json.dumps(data, separators=(",", ":"))), encoding="utf-8")
+    print(f"  wrote {out}", flush=True)
+    return out
 
 
-def render_scenarios(root, fps=10, slots=None):
-    root = Path(root)
-    replays = root / "replays"
-    candidate = sorted(replays.glob("FrozenAgent_LRU_tight_*.json"))
-    if not candidate:
-        raise FileNotFoundError("Evaluate the LRU/tight agent before rendering scenarios")
-    frozen = candidate[0]
-    trace = json.loads(frozen.read_text())["trace"]
-    scenarios = {
-        "agent_vs_greedy": [frozen, replays / f"Greedy_latency_LRU_tight_{trace}.json"],
-        "four_policies": [replays / f"FrozenAgent_{p}_tight_{trace}.json" for p in ("LRU", "LFU", "FIFO", "GDSF")],
-        "disk_pressure": [frozen, replays / f"FrozenAgent_LRU_large_{trace}.json"],
+# ------------------------------------------------------------------------------------ scenarios / CLI
+def scenarios(root, policy="LRU"):
+    r = Path(root) / "replays"
+    return {
+        "agent_vs_greedy": ([r / f"Agent_{policy}_tight_test0.json", r / f"Greedy_latency_{policy}_tight_test0.json"],
+                            f"CHES agent vs the best heuristic (Greedy_latency), {policy} eviction, tight disk"),
+        "four_policies": ([r / f"Agent_{p}_tight_test0.json" for p in ("LRU", "LFU", "FIFO", "GDSF")],
+                          "CHES agent (one trained network per policy) under LRU / LFU / FIFO / GDSF eviction, tight disk"),
+        "disk_pressure": ([r / f"Agent_{policy}_large_test0.json", r / f"Agent_{policy}_tight_test0.json"],
+                          f"Same workload, large vs tight disk ({policy}): eviction pressure appears"),
     }
-    for name, paths in scenarios.items():
-        panels = load_panels(paths)
-        (replays / f"scenario_{name}.json").write_text(json.dumps(dict(panels=panels), separators=(",", ":")))
-        export_html(panels, root / "figures" / f"replay_{name}.html", slots)
-        export_video(panels, root / "figures" / f"replay_{name}.mp4", fps, slots)
+
+
+def render(paths, mode, fps, slots, out, subtitle=""):
+    panels = [prepare(p, slots) for p in paths]
+    if len({P["trace"] for P in panels}) > 1:
+        raise ValueError("All panels must replay the same trace")
+    if mode in ("html", "both"):
+        render_html(panels, out, subtitle)
+    if mode in ("mp4", "both"):
+        render_video(panels, out, fps)
+
+
+def render_scenarios(root, fps=10, slots=200, mode="both"):
+    figs = Path(root) / "figures"
+    for name, (paths, sub) in scenarios(root).items():
+        print(f"Scenario {name}", flush=True)
+        render(paths, mode, fps, slots, figs / f"replay_{name}", sub)
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--replay", nargs="+")
-    parser.add_argument("--mode", choices=("mp4", "html"), default="html")
-    parser.add_argument("--fps", type=int, default=10)
-    parser.add_argument("--output")
-    parser.add_argument("--slots", type=int)
-    parser.add_argument("--scenarios", action="store_true")
-    parser.add_argument("--smoke", action="store_true", help="Render all three scenarios, first 16 slots")
-    parser.add_argument("--root", default="outputs")
-    args = parser.parse_args()
-    if args.smoke:
-        args.scenarios, args.slots = True, args.slots or 16
-    if args.fps < 1 or (args.slots is not None and args.slots < 1):
-        parser.error("FPS and slots must be positive")
-    if args.scenarios:
-        render_scenarios(args.root, args.fps, args.slots)
-    elif args.replay:
-        panels = load_panels(args.replay)
-        out = args.output or str(Path(args.root) / "figures" / f"replay_{Path(args.replay[0]).stem}")
-        if args.mode == "html":
-            export_html(panels, out, args.slots)
-        else:
-            export_video(panels, out, args.fps, args.slots)
+    pa = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    pa.add_argument("--replay", nargs="+", help="1, 2 or 4 replay JSON files (same trace)")
+    pa.add_argument("--mode", choices=("mp4", "html", "both"), default="html")
+    pa.add_argument("--fps", type=int, default=10)
+    pa.add_argument("--slots", type=int, default=None, help="limit the number of slots rendered")
+    pa.add_argument("--out", default=None)
+    pa.add_argument("--scenarios", action="store_true")
+    pa.add_argument("--smoke", action="store_true", help="scenarios with a few slots only")
+    pa.add_argument("--root", default="outputs/run")
+    a = pa.parse_args()
+    if a.scenarios or a.smoke:
+        render_scenarios(a.root, a.fps, 8 if a.smoke else (a.slots or 200), "both" if a.smoke else a.mode)
+    elif a.replay:
+        if len(a.replay) not in (1, 2, 4):
+            pa.error("use 1, 2 or 4 replay files")
+        out = a.out or str(Path(a.replay[0]).parent.parent / "figures" / ("replay_" + "_vs_".join(Path(p).stem for p in a.replay)))
+        render(a.replay, a.mode, a.fps, a.slots, out)
     else:
-        parser.error("Provide --replay or --scenarios")
+        pa.error("use --replay or --scenarios")
 
 
 if __name__ == "__main__":

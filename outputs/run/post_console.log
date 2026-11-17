@@ -1,0 +1,30 @@
+Test evaluation (16 traces x 36 configs x 6 methods) in 14.9s
+Replay logs written to outputs/run/replays
+config              Agent lat Greedy lat  Agent on-time  Greedy on-time  Agent ev Greedy ev
+LRU/tight               2.222      2.292          0.859           0.852       442       498
+LRU/medium              1.359      1.435          0.951           0.940       127       154
+LRU/large               1.161      1.167          0.970           0.966         0         0
+LFU/tight               2.215      2.266          0.860           0.854       440       489
+LFU/medium              1.369      1.440          0.950           0.939       140       167
+LFU/large               1.164      1.167          0.969           0.966         0         0
+FIFO/tight              2.238      2.361          0.858           0.844       457       516
+FIFO/medium             1.406      1.521          0.947           0.933       134       175
+FIFO/large              1.165      1.167          0.968           0.966         0         0
+GDSF/tight              2.179      2.295          0.863           0.847       426       492
+GDSF/medium             1.389      1.433          0.948           0.939       135       160
+GDSF/large              1.166      1.167          0.969           0.966         0         0
+Figures written to outputs/run/figures
+Scenario agent_vs_greedy
+  wrote outputs/run/figures/replay_agent_vs_greedy.html
+  wrote outputs/run/figures/replay_agent_vs_greedy.mp4
+Scenario four_policies
+  wrote outputs/run/figures/replay_four_policies.html
+  wrote outputs/run/figures/replay_four_policies.mp4
+Scenario disk_pressure
+  wrote outputs/run/figures/replay_disk_pressure.html
+  wrote outputs/run/figures/replay_disk_pressure.mp4
+
+real	8m54.466s
+user	8m58.495s
+sys	0m33.130s
+POST_DONE

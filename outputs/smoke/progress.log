@@ -1,0 +1,3 @@
+[iter    1/3] episodes     2/6 |   7.5s/it | elapsed 0m07s | ETA ... | train: lat 9.97 on-time 0.298 hit 0.144 | critic 0.987 alpha 0.0499 ent 2.34
+[iter    2/3] episodes     4/6 |   1.4s/it | elapsed 0m09s | ETA 0m04s | train: lat 9.40 on-time 0.342 hit 0.188 | critic 1.119 alpha 0.0496 ent 2.26
+[iter    3/3] episodes     6/6 |   1.4s/it | elapsed 0m11s | ETA 0m00s | train: lat 9.26 on-time 0.341 hit 0.172 | critic 0.937 alpha 0.0493 ent 2.24

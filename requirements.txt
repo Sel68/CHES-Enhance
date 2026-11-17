@@ -1,7 +1,7 @@
-numpy>=1.26,<3
-jax==0.6.2
-jaxlib==0.6.2
-optax==0.2.8
-matplotlib>=3.9,<4
-pillow>=10
-pytest>=6.2.5
+numpy>=1.26
+jax>=0.4.30          # CPU. For NVIDIA GPU instead: pip install -U "jax[cuda12]"  (or "jax[cuda13]" on newer drivers)
+optax>=0.2.3
+matplotlib>=3.8
+pillow>=10           # GIF fallback for animations
+imageio-ffmpeg>=0.5  # bundled ffmpeg for MP4 export (optional)
+pytest>=7

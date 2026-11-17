@@ -1,0 +1,578 @@
+{
+ "Agent|LRU|tight": {
+  "avg_latency": 2.222183585166931,
+  "completion": 0.8585312950114409,
+  "hit_rate": 0.608104195445776,
+  "evictions": 442.0625,
+  "avg_wait": 0.7095631621778011,
+  "rejection": 0.007927083669831822
+ },
+ "Agent|LRU|medium": {
+  "avg_latency": 1.359263889491558,
+  "completion": 0.9506250470876694,
+  "hit_rate": 0.8537083740035692,
+  "evictions": 126.85416666666667,
+  "avg_wait": 0.253781499962012,
+  "rejection": 0.0
+ },
+ "Agent|LRU|large": {
+  "avg_latency": 1.1609111341337364,
+  "completion": 0.970000047236681,
+  "hit_rate": 0.9212917077044646,
+  "evictions": 0.0,
+  "avg_wait": 0.13245879113674164,
+  "rejection": 0.0
+ },
+ "Agent|LFU|tight": {
+  "avg_latency": 2.214914031326771,
+  "completion": 0.8602917070190111,
+  "hit_rate": 0.6115104431907336,
+  "evictions": 440.3125,
+  "avg_wait": 0.7068569250404835,
+  "rejection": 0.0074166669813469826
+ },
+ "Agent|LFU|medium": {
+  "avg_latency": 1.3688921245435874,
+  "completion": 0.9501042154928049,
+  "hit_rate": 0.8457187923292319,
+  "evictions": 140.45833333333334,
+  "avg_wait": 0.2688617954651515,
+  "rejection": 0.0
+ },
+ "Agent|LFU|large": {
+  "avg_latency": 1.1636559541026752,
+  "completion": 0.9685000466803709,
+  "hit_rate": 0.9202500445147356,
+  "evictions": 0.0,
+  "avg_wait": 0.13578216079622507,
+  "rejection": 0.0
+ },
+ "Agent|FIFO|tight": {
+  "avg_latency": 2.2384926254550614,
+  "completion": 0.8575729553898176,
+  "hit_rate": 0.5999375271300474,
+  "evictions": 456.7916666666667,
+  "avg_wait": 0.7246568898359934,
+  "rejection": 0.007385416932568963
+ },
+ "Agent|FIFO|medium": {
+  "avg_latency": 1.4063267360130947,
+  "completion": 0.9470208796362082,
+  "hit_rate": 0.8437396238247553,
+  "evictions": 133.5625,
+  "avg_wait": 0.27193458781888086,
+  "rejection": 0.0
+ },
+ "Agent|FIFO|large": {
+  "avg_latency": 1.1649898228545983,
+  "completion": 0.9678542129695415,
+  "hit_rate": 0.9193958764274915,
+  "evictions": 0.0,
+  "avg_wait": 0.13805332221090794,
+  "rejection": 0.0
+ },
+ "Agent|GDSF|tight": {
+  "avg_latency": 2.1794756775101027,
+  "completion": 0.8627812899649143,
+  "hit_rate": 0.6189479480187098,
+  "evictions": 425.7916666666667,
+  "avg_wait": 0.6972241662442684,
+  "rejection": 0.0074687502613718
+ },
+ "Agent|GDSF|medium": {
+  "avg_latency": 1.3891452923417091,
+  "completion": 0.948260460048914,
+  "hit_rate": 0.8423437923192978,
+  "evictions": 135.04166666666666,
+  "avg_wait": 0.2759818828975161,
+  "rejection": 0.0
+ },
+ "Agent|GDSF|large": {
+  "avg_latency": 1.1655459056297939,
+  "completion": 0.9691146252055963,
+  "hit_rate": 0.921031292527914,
+  "evictions": 0.0,
+  "avg_wait": 0.13310765443990627,
+  "rejection": 0.0
+ },
+ "Greedy_latency|LRU|tight": {
+  "avg_latency": 2.292486757040024,
+  "completion": 0.8522812835872173,
+  "hit_rate": 0.5855312757194042,
+  "evictions": 497.5,
+  "avg_wait": 0.7620265819132328,
+  "rejection": 0.0101250004627218
+ },
+ "Greedy_latency|LRU|medium": {
+  "avg_latency": 1.4353056065738201,
+  "completion": 0.9400937967002392,
+  "hit_rate": 0.8425000309944153,
+  "evictions": 153.625,
+  "avg_wait": 0.28701122384518385,
+  "rejection": 0.0
+ },
+ "Greedy_latency|LRU|large": {
+  "avg_latency": 1.1667232438921928,
+  "completion": 0.9655938036739826,
+  "hit_rate": 0.9200000390410423,
+  "evictions": 0.0,
+  "avg_wait": 0.14280868507921696,
+  "rejection": 0.0
+ },
+ "Greedy_latency|LFU|tight": {
+  "avg_latency": 2.2657897621393204,
+  "completion": 0.8541562929749489,
+  "hit_rate": 0.5909062810242176,
+  "evictions": 489.25,
+  "avg_wait": 0.7545015811920166,
+  "rejection": 0.008625000325992005
+ },
+ "Greedy_latency|LFU|medium": {
+  "avg_latency": 1.4404091946780682,
+  "completion": 0.939406294375658,
+  "hit_rate": 0.8341875448822975,
+  "evictions": 167.3125,
+  "avg_wait": 0.30188383534550667,
+  "rejection": 0.0
+ },
+ "Greedy_latency|LFU|large": {
+  "avg_latency": 1.1667232438921928,
+  "completion": 0.9655938036739826,
+  "hit_rate": 0.9200000390410423,
+  "evictions": 0.0,
+  "avg_wait": 0.14280868507921696,
+  "rejection": 0.0
+ },
+ "Greedy_latency|FIFO|tight": {
+  "avg_latency": 2.3607714772224426,
+  "completion": 0.8438437953591347,
+  "hit_rate": 0.565781282261014,
+  "evictions": 516.375,
+  "avg_wait": 0.8015105575323105,
+  "rejection": 0.01093750046857167
+ },
+ "Greedy_latency|FIFO|medium": {
+  "avg_latency": 1.5207248106598854,
+  "completion": 0.93271878734231,
+  "hit_rate": 0.8215937912464142,
+  "evictions": 174.9375,
+  "avg_wait": 0.324960108846426,
+  "rejection": 0.0
+ },
+ "Greedy_latency|FIFO|large": {
+  "avg_latency": 1.1667232438921928,
+  "completion": 0.9655938036739826,
+  "hit_rate": 0.9200000390410423,
+  "evictions": 0.0,
+  "avg_wait": 0.14280868507921696,
+  "rejection": 0.0
+ },
+ "Greedy_latency|GDSF|tight": {
+  "avg_latency": 2.294590562582016,
+  "completion": 0.8472812809050083,
+  "hit_rate": 0.5869687795639038,
+  "evictions": 492.4375,
+  "avg_wait": 0.7679759450256824,
+  "rejection": 0.010562500534433639
+ },
+ "Greedy_latency|GDSF|medium": {
+  "avg_latency": 1.4328112490475178,
+  "completion": 0.9385000392794609,
+  "hit_rate": 0.838062547147274,
+  "evictions": 160.375,
+  "avg_wait": 0.29892054200172424,
+  "rejection": 0.0
+ },
+ "Greedy_latency|GDSF|large": {
+  "avg_latency": 1.1667232438921928,
+  "completion": 0.9655938036739826,
+  "hit_rate": 0.9200000390410423,
+  "evictions": 0.0,
+  "avg_wait": 0.14280868507921696,
+  "rejection": 0.0
+ },
+ "Image_priority|LRU|tight": {
+  "avg_latency": 8.721037298440933,
+  "completion": 0.5528125241398811,
+  "hit_rate": 0.7237187810242176,
+  "evictions": 203.1875,
+  "avg_wait": 0.5322352256625891,
+  "rejection": 0.027062500987085514
+ },
+ "Image_priority|LRU|medium": {
+  "avg_latency": 8.812725007534027,
+  "completion": 0.5866250358521938,
+  "hit_rate": 0.8752500414848328,
+  "evictions": 40.4375,
+  "avg_wait": 0.27701666951179504,
+  "rejection": 0.00043750002805609256
+ },
+ "Image_priority|LRU|large": {
+  "avg_latency": 8.383333086967468,
+  "completion": 0.6000312753021717,
+  "hit_rate": 0.8972500376403332,
+  "evictions": 0.0,
+  "avg_wait": 0.23081172723323107,
+  "rejection": 0.0
+ },
+ "Image_priority|LFU|tight": {
+  "avg_latency": 8.814681380987167,
+  "completion": 0.5429375227540731,
+  "hit_rate": 0.7254375368356705,
+  "evictions": 199.875,
+  "avg_wait": 0.5266552902758121,
+  "rejection": 0.028218751394888386
+ },
+ "Image_priority|LFU|medium": {
+  "avg_latency": 8.789956837892532,
+  "completion": 0.5835625324398279,
+  "hit_rate": 0.8777187913656235,
+  "evictions": 39.0625,
+  "avg_wait": 0.2738897707313299,
+  "rejection": 0.0002500000118743628
+ },
+ "Image_priority|LFU|large": {
+  "avg_latency": 8.383333086967468,
+  "completion": 0.6000312753021717,
+  "hit_rate": 0.8972500376403332,
+  "evictions": 0.0,
+  "avg_wait": 0.23081172723323107,
+  "rejection": 0.0
+ },
+ "Image_priority|FIFO|tight": {
+  "avg_latency": 9.089001148939133,
+  "completion": 0.5374687779694796,
+  "hit_rate": 0.7229062840342522,
+  "evictions": 202.0625,
+  "avg_wait": 0.5243184585124254,
+  "rejection": 0.029187501495471224
+ },
+ "Image_priority|FIFO|medium": {
+  "avg_latency": 8.739768832921982,
+  "completion": 0.5894375257194042,
+  "hit_rate": 0.8781875371932983,
+  "evictions": 39.25,
+  "avg_wait": 0.2703188955783844,
+  "rejection": 0.0001875000016298145
+ },
+ "Image_priority|FIFO|large": {
+  "avg_latency": 8.383333086967468,
+  "completion": 0.6000312753021717,
+  "hit_rate": 0.8972500376403332,
+  "evictions": 0.0,
+  "avg_wait": 0.23081172723323107,
+  "rejection": 0.0
+ },
+ "Image_priority|GDSF|tight": {
+  "avg_latency": 8.899962723255157,
+  "completion": 0.5473750233650208,
+  "hit_rate": 0.7276250310242176,
+  "evictions": 198.4375,
+  "avg_wait": 0.523023933172226,
+  "rejection": 0.027187501385924406
+ },
+ "Image_priority|GDSF|medium": {
+  "avg_latency": 8.623127847909927,
+  "completion": 0.5919062830507755,
+  "hit_rate": 0.8792812898755074,
+  "evictions": 37.875,
+  "avg_wait": 0.2675522221252322,
+  "rejection": 3.125000148429535e-05
+ },
+ "Image_priority|GDSF|large": {
+  "avg_latency": 8.383333086967468,
+  "completion": 0.6000312753021717,
+  "hit_rate": 0.8972500376403332,
+  "evictions": 0.0,
+  "avg_wait": 0.23081172723323107,
+  "rejection": 0.0
+ },
+ "Least_load|LRU|tight": {
+  "avg_latency": 5.092711448669434,
+  "completion": 0.5268750246614218,
+  "hit_rate": 0.279281260445714,
+  "evictions": 843.8125,
+  "avg_wait": 1.4464298784732819,
+  "rejection": 0.10846875607967377
+ },
+ "Least_load|LRU|medium": {
+  "avg_latency": 6.6960214376449585,
+  "completion": 0.41175001859664917,
+  "hit_rate": 0.31637501530349255,
+  "evictions": 975.9375,
+  "avg_wait": 2.547460153698921,
+  "rejection": 0.008468750442261808
+ },
+ "Least_load|LRU|large": {
+  "avg_latency": 2.9830729216337204,
+  "completion": 0.7779062874615192,
+  "hit_rate": 0.7078437842428684,
+  "evictions": 0.0,
+  "avg_wait": 0.9558406099677086,
+  "rejection": 0.0
+ },
+ "Least_load|LFU|tight": {
+  "avg_latency": 5.101970225572586,
+  "completion": 0.5312812700867653,
+  "hit_rate": 0.28378126211464405,
+  "evictions": 843.75,
+  "avg_wait": 1.446105808019638,
+  "rejection": 0.10575000429525971
+ },
+ "Least_load|LFU|medium": {
+  "avg_latency": 6.65612256526947,
+  "completion": 0.4183125216513872,
+  "hit_rate": 0.31765626184642315,
+  "evictions": 979.25,
+  "avg_wait": 2.5608730614185333,
+  "rejection": 0.009281250357162207
+ },
+ "Least_load|LFU|large": {
+  "avg_latency": 2.9830729216337204,
+  "completion": 0.7779062874615192,
+  "hit_rate": 0.7078437842428684,
+  "evictions": 0.0,
+  "avg_wait": 0.9558406099677086,
+  "rejection": 0.0
+ },
+ "Least_load|FIFO|tight": {
+  "avg_latency": 5.125136286020279,
+  "completion": 0.5247500203549862,
+  "hit_rate": 0.27671876177191734,
+  "evictions": 854.9375,
+  "avg_wait": 1.4588576033711433,
+  "rejection": 0.10746875498443842
+ },
+ "Least_load|FIFO|medium": {
+  "avg_latency": 6.972990959882736,
+  "completion": 0.38996876776218414,
+  "hit_rate": 0.2993750125169754,
+  "evictions": 981.6875,
+  "avg_wait": 2.6308213025331497,
+  "rejection": 0.010500000440515578
+ },
+ "Least_load|FIFO|large": {
+  "avg_latency": 2.9830729216337204,
+  "completion": 0.7779062874615192,
+  "hit_rate": 0.7078437842428684,
+  "evictions": 0.0,
+  "avg_wait": 0.9558406099677086,
+  "rejection": 0.0
+ },
+ "Least_load|GDSF|tight": {
+  "avg_latency": 5.1252328753471375,
+  "completion": 0.5225625298917294,
+  "hit_rate": 0.2805000115185976,
+  "evictions": 844.625,
+  "avg_wait": 1.4521850571036339,
+  "rejection": 0.10893750376999378
+ },
+ "Least_load|GDSF|medium": {
+  "avg_latency": 6.619085073471069,
+  "completion": 0.4220937732607126,
+  "hit_rate": 0.3246250171214342,
+  "evictions": 966.875,
+  "avg_wait": 2.523324117064476,
+  "rejection": 0.009375000528962119
+ },
+ "Least_load|GDSF|large": {
+  "avg_latency": 2.9830729216337204,
+  "completion": 0.7779062874615192,
+  "hit_rate": 0.7078437842428684,
+  "evictions": 0.0,
+  "avg_wait": 0.9558406099677086,
+  "rejection": 0.0
+ },
+ "Greedy_resources|LRU|tight": {
+  "avg_latency": 4.436921373009682,
+  "completion": 0.5836250316351652,
+  "hit_rate": 0.2787812640890479,
+  "evictions": 894.125,
+  "avg_wait": 1.5627461448311806,
+  "rejection": 0.07687500328756869
+ },
+ "Greedy_resources|LRU|medium": {
+  "avg_latency": 6.858077734708786,
+  "completion": 0.41693751886487007,
+  "hit_rate": 0.31884376518428326,
+  "evictions": 957.6875,
+  "avg_wait": 2.567531391978264,
+  "rejection": 0.00965625053140684
+ },
+ "Greedy_resources|LRU|large": {
+  "avg_latency": 2.363219752907753,
+  "completion": 0.841812539845705,
+  "hit_rate": 0.7397500313818455,
+  "evictions": 0.0,
+  "avg_wait": 0.8608357645571232,
+  "rejection": 0.0
+ },
+ "Greedy_resources|LFU|tight": {
+  "avg_latency": 4.433028295636177,
+  "completion": 0.5843750219792128,
+  "hit_rate": 0.2800312638282776,
+  "evictions": 891.875,
+  "avg_wait": 1.5680641159415245,
+  "rejection": 0.07596875261515379
+ },
+ "Greedy_resources|LFU|medium": {
+  "avg_latency": 6.710352450609207,
+  "completion": 0.430531270802021,
+  "hit_rate": 0.3314062636345625,
+  "evictions": 953.5625,
+  "avg_wait": 2.528499200940132,
+  "rejection": 0.008656250374770025
+ },
+ "Greedy_resources|LFU|large": {
+  "avg_latency": 2.363219752907753,
+  "completion": 0.841812539845705,
+  "hit_rate": 0.7397500313818455,
+  "evictions": 0.0,
+  "avg_wait": 0.8608357645571232,
+  "rejection": 0.0
+ },
+ "Greedy_resources|FIFO|tight": {
+  "avg_latency": 4.46203425526619,
+  "completion": 0.5790000278502703,
+  "hit_rate": 0.2743750121444464,
+  "evictions": 893.8125,
+  "avg_wait": 1.5767550393939018,
+  "rejection": 0.07828125404193997
+ },
+ "Greedy_resources|FIFO|medium": {
+  "avg_latency": 7.043324708938599,
+  "completion": 0.406281266361475,
+  "hit_rate": 0.3107187654823065,
+  "evictions": 963.1875,
+  "avg_wait": 2.5934759825468063,
+  "rejection": 0.011718750407453626
+ },
+ "Greedy_resources|FIFO|large": {
+  "avg_latency": 2.363219752907753,
+  "completion": 0.841812539845705,
+  "hit_rate": 0.7397500313818455,
+  "evictions": 0.0,
+  "avg_wait": 0.8608357645571232,
+  "rejection": 0.0
+ },
+ "Greedy_resources|GDSF|tight": {
+  "avg_latency": 4.427815020084381,
+  "completion": 0.5838750209659338,
+  "hit_rate": 0.2780937599018216,
+  "evictions": 887.4375,
+  "avg_wait": 1.571041040122509,
+  "rejection": 0.07671875320374966
+ },
+ "Greedy_resources|GDSF|medium": {
+  "avg_latency": 6.636079400777817,
+  "completion": 0.4318125229328871,
+  "hit_rate": 0.3291250206530094,
+  "evictions": 957.3125,
+  "avg_wait": 2.5360779613256454,
+  "rejection": 0.008375000386877218
+ },
+ "Greedy_resources|GDSF|large": {
+  "avg_latency": 2.363219752907753,
+  "completion": 0.841812539845705,
+  "hit_rate": 0.7397500313818455,
+  "evictions": 0.0,
+  "avg_wait": 0.8608357645571232,
+  "rejection": 0.0
+ },
+ "Random|LRU|tight": {
+  "avg_latency": 9.773813247680664,
+  "completion": 0.3862812705338001,
+  "hit_rate": 0.3624062705785036,
+  "evictions": 632.4375,
+  "avg_wait": 1.1135405041277409,
+  "rejection": 0.14821875654160976
+ },
+ "Random|LRU|medium": {
+  "avg_latency": 13.200796961784363,
+  "completion": 0.24862501304596663,
+  "hit_rate": 0.40225001610815525,
+  "evictions": 696.3125,
+  "avg_wait": 1.8434625789523125,
+  "rejection": 0.06184375274460763
+ },
+ "Random|LRU|large": {
+  "avg_latency": 15.874545812606812,
+  "completion": 0.33018751814961433,
+  "hit_rate": 0.6352187804877758,
+  "evictions": 0.0,
+  "avg_wait": 1.7528143152594566,
+  "rejection": 0.021156251168577
+ },
+ "Random|LFU|tight": {
+  "avg_latency": 9.740674436092377,
+  "completion": 0.38893751986324787,
+  "hit_rate": 0.3645937703549862,
+  "evictions": 627.75,
+  "avg_wait": 1.1153955310583115,
+  "rejection": 0.1461875052191317
+ },
+ "Random|LFU|medium": {
+  "avg_latency": 13.060013055801392,
+  "completion": 0.253781259059906,
+  "hit_rate": 0.39859376661479473,
+  "evictions": 704.25,
+  "avg_wait": 1.859386183321476,
+  "rejection": 0.06062500306870788
+ },
+ "Random|LFU|large": {
+  "avg_latency": 15.874545812606812,
+  "completion": 0.33018751814961433,
+  "hit_rate": 0.6352187804877758,
+  "evictions": 0.0,
+  "avg_wait": 1.7528143152594566,
+  "rejection": 0.021156251168577
+ },
+ "Random|FIFO|tight": {
+  "avg_latency": 9.788451999425888,
+  "completion": 0.3832500223070383,
+  "hit_rate": 0.36243751645088196,
+  "evictions": 628.375,
+  "avg_wait": 1.1105096600949764,
+  "rejection": 0.15337500721216202
+ },
+ "Random|FIFO|medium": {
+  "avg_latency": 13.06149309873581,
+  "completion": 0.24575001187622547,
+  "hit_rate": 0.39312501810491085,
+  "evictions": 710.0625,
+  "avg_wait": 1.8796582892537117,
+  "rejection": 0.06046875356696546
+ },
+ "Random|FIFO|large": {
+  "avg_latency": 15.874545812606812,
+  "completion": 0.33018751814961433,
+  "hit_rate": 0.6352187804877758,
+  "evictions": 0.0,
+  "avg_wait": 1.7528143152594566,
+  "rejection": 0.021156251168577
+ },
+ "Random|GDSF|tight": {
+  "avg_latency": 9.831606835126877,
+  "completion": 0.3826562697067857,
+  "hit_rate": 0.3626562636345625,
+  "evictions": 622.8125,
+  "avg_wait": 1.1029067113995552,
+  "rejection": 0.1528125060722232
+ },
+ "Random|GDSF|medium": {
+  "avg_latency": 13.078455984592438,
+  "completion": 0.250562509521842,
+  "hit_rate": 0.39896876737475395,
+  "evictions": 706.25,
+  "avg_wait": 1.8561458960175514,
+  "rejection": 0.059343752334825695
+ },
+ "Random|GDSF|large": {
+  "avg_latency": 15.874545812606812,
+  "completion": 0.33018751814961433,
+  "hit_rate": 0.6352187804877758,
+  "evictions": 0.0,
+  "avg_wait": 1.7528143152594566,
+  "rejection": 0.021156251168577
+ }
+}

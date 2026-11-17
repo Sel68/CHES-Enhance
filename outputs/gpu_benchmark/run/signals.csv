@@ -1,0 +1,11 @@
+run,policy,disk,seed,episode,reward_mode,mean_learning_reward,discounted_learning_return
+LRU_tight_s0,LRU,tight,0,1,potential,0.6776199032360253,20.164991608742696
+LRU_tight_s0,LRU,tight,0,2,potential,0.7247114928810228,24.614084840568573
+LRU_tight_s0,LRU,tight,0,3,potential,0.6351883705525078,26.11202789332748
+LRU_tight_s0,LRU,tight,0,4,potential,0.6313718686147565,27.303460063433096
+LRU_tight_s0,LRU,tight,0,5,potential,0.6341358231385436,26.252025975095073
+LRU_tight_s0,LRU,tight,0,6,potential,0.6290971943516311,27.38223144324015
+LRU_tight_s0,LRU,tight,0,7,potential,0.630509924582204,26.984142093731727
+LRU_tight_s0,LRU,tight,0,8,potential,0.6152393619177922,25.214462114087713
+LRU_tight_s0,LRU,tight,0,9,potential,0.6337032950338315,22.71633180343511
+LRU_tight_s0,LRU,tight,0,10,potential,0.6292876428215478,23.28884702334166

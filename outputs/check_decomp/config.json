@@ -1,0 +1,149 @@
+{
+ "args": {
+  "command": "train",
+  "data": "data",
+  "out": "outputs/check_decomp",
+  "device": "gpu",
+  "counts": [
+   256,
+   8,
+   16
+  ],
+  "seeds": [
+   0
+  ],
+  "seed": 0,
+  "episodes": 240,
+  "envs": 8,
+  "chunk": 50,
+  "updates": 8,
+  "learn_start": 1000,
+  "buffer": 32000,
+  "width": 64,
+  "history": 4,
+  "batch": 256,
+  "gamma": 0.98,
+  "plain_critic": false,
+  "ent_ratio": 0.1,
+  "eval_every": 3,
+  "replay_slots": 200
+ },
+ "hp": {
+  "width": 64,
+  "gru": 64,
+  "history": 4,
+  "batch": 256,
+  "gamma": 0.98,
+  "tau": 0.005,
+  "actor_lr": 0.0001,
+  "critic_lr": 0.0003,
+  "alpha_lr": 0.0003,
+  "alpha0": 0.05,
+  "ent_ratio": 0.1,
+  "clip": 5.0,
+  "decompose": true
+ },
+ "configs": [
+  [
+   "LRU",
+   "tight",
+   0
+  ],
+  [
+   "LRU",
+   "medium",
+   0
+  ],
+  [
+   "LRU",
+   "large",
+   0
+  ],
+  [
+   "LFU",
+   "tight",
+   0
+  ],
+  [
+   "LFU",
+   "medium",
+   0
+  ],
+  [
+   "LFU",
+   "large",
+   0
+  ],
+  [
+   "FIFO",
+   "tight",
+   0
+  ],
+  [
+   "FIFO",
+   "medium",
+   0
+  ],
+  [
+   "FIFO",
+   "large",
+   0
+  ],
+  [
+   "GDSF",
+   "tight",
+   0
+  ],
+  [
+   "GDSF",
+   "medium",
+   0
+  ],
+  [
+   "GDSF",
+   "large",
+   0
+  ]
+ ],
+ "data_meta": {
+  "cfg": {
+   "seed": 2026,
+   "cpu_nodes": 14,
+   "gpu_nodes": 6,
+   "images": 50,
+   "tasks": 2000,
+   "max_jobs": 16,
+   "gpu_lambda": 0.05,
+   "gpu_alpha": 0.5,
+   "phase_slots": 40,
+   "zipf": 1.0,
+   "repeat": 0.2,
+   "rate": 14.0,
+   "allow": [
+    2.5,
+    5.0
+   ],
+   "dl_div": 1.0
+  },
+  "counts": {
+   "train": 256,
+   "val": 8,
+   "test": 16
+  },
+  "disks": {
+   "tight": 0.05,
+   "medium": 0.1,
+   "large": 1.0
+  },
+  "policies": [
+   "LRU",
+   "LFU",
+   "FIFO",
+   "GDSF"
+  ]
+ },
+ "devices": [
+  "cuda:0"
+ ],
+ "jax": "0.12.0.1"
+}
