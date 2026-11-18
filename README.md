@@ -1,146 +1,235 @@
-# CHES with finite image caches · JAX
+# CHES with finite disks and eviction policies (JAX)
 
-A compact research reconstruction of **Microservice Scheduling With Spatiotemporal Learning in Dynamic and GPU–CPU Heterogeneous Edge Environment** (Chen et al., IEEE TSC, 2026), extended with finite disk capacity and LRU, LFU, FIFO, and GDSF eviction. The supplied PDF and `code available/` are preserved. This implementation does **not** claim to reproduce the paper's published numbers.
+Rebuild of **CHES** — *Microservice Scheduling With Spatiotemporal Learning in Dynamic and GPU-CPU
+Heterogeneous Edge Environment* (Chen et al., IEEE TSC 2026) — extended with **limited per-node disk
+space** and four **image eviction policies (LRU, LFU, FIFO, GDSF)**. One CHES agent (CNN + GRU + masked
+discrete SAC) is trained per *(eviction policy × disk size)* = **12 configurations**, all in one compiled
+JAX program on CPU or GPU. The authors' original code is kept untouched in `code available/`.
 
-Six implementation files, one test file, no PyTorch or Flax:
+```
+data.py      world (20 nodes, 50 images/services) + train/val/test request traces (.npz)
+env.py       JAX simulator: latency model, serial image pulls, disks, LRU/LFU/FIFO/GDSF, heuristics, replay export
+agent.py     CNN-GRU actor + twin critics, masked discrete SAC, on-device replay buffer
+run.py       CLI: data | train | evaluate | plot | smoke   (progress + ETA printed every iteration)
+plots.py     convergence, training dynamics, test results, eviction pressure, improvement heat-map
+viz.py       animation from replay JSON only: MP4 (GIF fallback) + self-contained HTML player
+test_core.py simulator invariants (capacity, pinning, eviction order vs. reference, type constraints)
+```
 
-| File | Purpose |
+## Quick start
+
+```bash
+pip install -r requirements.txt                 # CPU
+pip install -U "jax[cuda12]"                    # NVIDIA GPU (use cuda13 for newest drivers / WSL)
+
+python run.py smoke --device cpu                # ~1 min end-to-end check: tiny data, 12 agents, plots, 3 animations
+python run.py data  --data data                 # 256 train / 8 val / 16 test traces, 2000 tasks each
+python run.py train --data data --out outputs/run --device gpu --episodes 800 --seeds 0 1 2
+python run.py evaluate --data data --out outputs/run --device gpu   # test metrics + replay logs
+python run.py plot --out outputs/run
+python viz.py --scenarios --root outputs/run --mode both --fps 10  # the 3 showcase animations (200 slots)
+python viz.py --replay outputs/run/replays/Agent_LRU_tight_test0.json --mode mp4|html --fps 10
+python -m pytest -q test_core.py
+```
+
+`--device auto|cpu|gpu` works everywhere; the same code and checkpoints run on CPU and GPU. On Windows,
+JAX GPU runs inside WSL2 (this project was trained on an RTX 5060 Laptop GPU via WSL, `jax[cuda13]`).
+Training prints one line per iteration (episodes done, s/it, elapsed, **ETA**, train latency / on-time /
+hit rate, critic loss, temperature, entropy) and a validation table (agent vs Greedy_latency) every
+`--eval_every` iterations; the same lines go to `<out>/progress.log`.
+
+## What was rebuilt, and why
+
+The previous attempt in this folder (Python event simulator + JAX agent) needed ~38 s per training
+episode on the GPU and, after 10 episodes, its agent was still worse than Greedy_latency. The author code
+(`code available/`) has no eviction, discards tasks when no node fits, and its configs do not match the
+paper. So the environment was rewritten as **pure JAX functions** (`jit`/`vmap`/`scan`): rollouts of all
+agents × parallel environments and SAC updates run in a single compiled program, ~0.1 s per agent-episode
+on the laptop GPU (≈ 300× faster), which is what makes 12 configs × 3 seeds × 800 episodes feasible.
+
+### Environment (paper Sec. III, authors' code units: time in slots)
+
+| Item | Choice |
 |---|---|
-| `data.py` | Configuration, fixed service catalogue, reproducible request traces |
-| `env.py` | Concurrent event simulation, cache policies, observations, evaluation logs |
-| `agent.py` | JAX CNN–GRU discrete SAC, replay, trusted local checkpoints |
-| `run.py` | Data generation, training, evaluation, controlled replay recording, smoke workflow |
-| `plots.py` | Convergence/results/optimizer figures, uncertainty, paired comparisons |
-| `viz.py` | JSON-only video/GIF and standalone HTML replay |
-| `test_core.py` | Physical/cache invariants and learning/replay checks |
+| Nodes | 20 = 14 CPU + 6 GPU (paper default 20), random positions in 100×100, ordered CPU→GPU then by x so the 1-D CNN sees spatial neighbours |
+| Node resources | CPU 3–6.5 GHz, RAM 80–180 GB; GPU 10–16 (normalised FLOPS), video memory 16–32 GB, GPU mem bandwidth 2–6; network 2–6 Gbps (paper Sec. V-A) |
+| Images / services | 50 images, 3–15 GB (paper); each image is one microservice, ½ CPU-, ½ GPU-preferred |
+| Latency (Eq. 1–6) | `T = max(T_upload, T_image) + T_comp`; `T_image` = 0 if cached, residual pull if downloading, else node pull-queue + `size/bw`; CPU: `c·U/F`; GPU: `α·d·U/Bg + f·U/(Fg(1-λ)^(U-1))`, λ = 0.05, α = 0.5; a GPU service on a CPU node needs 4.5× the work (authors' code); CPU services cannot run on GPU nodes |
+| Concurrency | U = jobs on the node at admission (incl. the new one), as in Eq. 4–5; jobs hold memory and pin their image from admission to finish; ≤ 16 jobs/node |
+| Pulls | serial per node (paper's download queue); duplicate requests share an in-flight pull ("coalesced") |
+| Feasibility mask (Alg. 2) | type, memory, job slot, and disk: image cached **or** `pinned/downloading bytes + size ≤ capacity`; if no node is feasible the task is rejected (latency = deadline + 5 slots) |
+| Reward (Eq. 18) | `(deadline allowance − latency) / 5`, immediate (the model's latency is known at admission) |
 
-## Run on this CPU machine
+**Disk regimes** (per-node capacity as a fraction of the 459 GB catalogue, calibrated with Greedy_latency):
+**tight 5 %** (≈ 2 images per node, ~500 evictions per 2000-task trace), **medium 10 %** (≈ 4–5 images,
+~70 evictions), **large 100 %** (everything fits, never evicts → the original paper's setting).
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python run.py --smoke --device cpu --output outputs/smoke
-```
+**Eviction policies** (only unpinned, fully downloaded images are candidates; exact greedy eviction in
+policy order until the new image fits): **LRU** least-recent access; **LFU** fewest references while
+resident (ties → LRU); **FIFO** oldest insertion; **GDSF** smallest `H = L + freq·cost/size` with
+`cost = 1 + pull time` and per-node inflation `L ← max evicted H` (ties → LRU).
 
-Use a fresh output directory. Smoke trains all **12 configurations**, evaluates the agent and five heuristics, saves three figure families as PNG/PDF, records replay JSON, renders **all three animation scenarios** as HTML and MP4 (GIF when ffmpeg is unavailable), and runs the tests. It uses 40-slot traces, a small network, two learning episodes, and one seed. Outputs explicitly say **SMOKE; mechanics only**. Re-running a smoke run requires a different `--output`.
+### Data (train/val/test)
 
-On the existing machine `python3` is available; inside a virtual environment `python` works too. Matplotlib uses a temporary writable cache. ffmpeg is optional and is already installed here. HTML export needs only Python's standard library; video export needs matplotlib and Pillow. The HTML works from a local file without a server or network.
+`data.py` generates one fixed world and disjoint request traces (separate seed streams per split):
+256 train, 8 validation (model selection), 16 test traces, 2000 tasks each (~145 slots). Arrivals are
+Poisson with a sinusoidal rate (mean 14 tasks/slot) plus 8 % bursts (×2.2). **Services recur**: image
+popularity is Zipf(1.0) over a shuffled ranking whose hot set drifts every 40 slots (4 hot/cold swaps),
+plus 20 % short-term repeats of one of the last 5 requested images — so an evicted image is often needed
+again soon, which is exactly where disk size and the eviction policy matter. Deadlines are 2.5–5 slots
+after arrival (authors: 3–5). Work and memory have ±20 % jitter per request.
 
-## Full experiment on GPU
+### Agent (paper Sec. IV)
 
-Generate the dataset once and copy it with the source to the GPU machine:
+Observation per node (29 features): node static (type, speed, bandwidth, capacity, position), node
+dynamic (load, memory, disk use, pull backlog, popularity-weighted cache value), task × node (image
+ready / downloading, estimated wait, compute, upload and total latency, gap to the best node, bytes
+that would be evicted, popularity of the would-be victims, #victims, feasibility), task (type, work,
+memory, deadline, image size, popularity, replication). Network: shared per-node encoder (1×1 conv) →
+**kernel-3 1-D CNN across nodes** (spatial) for the current task; **GRU over the last 4 scheduled tasks**
+(per-step pooled cluster embedding; temporal coupling within/after a slot, Fig. 2); per-node head
+`[CNN, encoder, GRU] → 64 → 16 → score` plus a forced-rejection logit. Actor, two critics and two target
+critics have the same architecture. **Masked discrete SAC** (Eq. 23–29): exact expectation over valid
+actions, twin-min targets, Huber critic loss, auto-tuned temperature (target entropy 0.1·log #valid
+nodes), τ = 0.005, actor/critic lr 1e-4 / 3e-4 (paper), batch 256, replay 32 000 transitions per agent
+(paper 30 000), 8 parallel envs, 8 updates every 50 env steps. No behaviour cloning or heuristic is used
+inside the agent — it learns from scratch. Evaluation is greedy (argmax of the actor). The best
+checkpoint per agent is selected on the validation traces; test traces are never seen in training.
 
-```bash
-python run.py data --data data --slots 400 --train-traces 64 --val-traces 4 --test-traces 8
-pip install -r requirements.txt
-pip install 'jax[cuda12]==0.6.2'
-python run.py train --data data --output outputs/full --device gpu
-python run.py evaluate --data data --output outputs/full --device gpu --replay_slots 200
-python run.py plot --output outputs/full
-python viz.py --scenarios --root outputs/full --fps 10
-```
+**Known-reward critic.** The immediate reward of *every* action (Eq. 18) is computable from the state
+(the latency estimate equals the realised latency; `test_core.py` checks this), so the soft Q-function is
+written exactly as `Q(s,a) = R(s,a) + F(s,a)` and the twin critics learn only the future part `F` with
+target `γ·V(s')`, `V(s') = Σ π(a'|s')[R(s',a') + min F_targ(s',a') − α log π(a'|s')]`. Same Bellman
+equation, less regression noise. `--plain_critic` restores the standard critic.
 
-Check NVIDIA driver/hardware requirements against the [JAX installation guide](https://docs.jax.dev/en/latest/installation.html). `--device auto` lets JAX select an available backend; `--device cpu` forces CPU; `--device gpu` (or `--device cuda`) explicitly selects NVIDIA CUDA and fails if CUDA initialization fails. The CLI maps `gpu` to `JAX_PLATFORMS=cuda`: JAX 0.6.2 expands the literal `gpu` platform alias to both CUDA and ROCm and requires both to initialize, which fails on an NVIDIA-only installation. Neural inference and updates use JAX on the selected device; the discrete-event simulator and replay sampling run on CPU. Small experiments can be slower on GPU because of dispatch overhead. No GPU execution has been verified on this CPU-only machine.
+**Convergence fixes (and why γ = 0.9, not the paper's 0.98).** The first full run (paper settings,
+target entropy 0.3·log #valid, kept in `outputs/run_v1_ent0.3`) beat Greedy_latency on tight disks but
+large-disk agents drifted from 1.01× to 1.11× greedy latency while α and the critic loss kept rising.
+Single-seed 240-episode checks (validation latency / Greedy_latency, mean of 4 policies):
 
-### Colab and the VS Code extension
+| variant | tight | medium | large (trend over training) | critic loss |
+|---|---|---|---|---|
+| paper γ 0.98, entropy 0.3 | 0.94 | 0.97 | 1.05 → 1.11 drifting | rising |
+| γ 0.98, entropy 0.1 | 0.92 | 0.99 | 1.01 → 1.09 drifting | 0.16 → 0.45 |
+| + known-reward critic | 0.94 | 0.96 | 1.04 → 1.11 drifting | 0.16 → 0.47 |
+| + γ 0.95 | 0.92 | 0.95 | 1.02 → 1.07 slow drift | 0.14 → 0.25 |
+| **+ γ 0.9 (used)** | **0.94** | **0.98** | **≈ 1.02 flat** | **≈ 0.13 flat** |
 
-Open `colab.ipynb` locally in VS Code and select a **Colab GPU kernel**. The notebook embeds the nine source/support files; running its first code cell transfers them to the remote runtime. It includes dependency repair, a GPU compilation check, persistent Drive data/results, a single-configuration trial, evaluation and all replay exports. No GitHub remote is required. The [official extension](https://github.com/googlecolab/colab-vscode) connects notebook cells to a remote runtime; local Python files are not automatically synchronized.
+With γ = 0.98 the future term is ~50 tasks long and its bootstrapped noise exceeds the small immediate
+differences between near-equivalent nodes, which matters most on a large disk; the actor then follows
+noise (actor-argmax, actor-sampling and critic-argmax all degraded equally, so it is not an argmax
+artefact). γ = 0.9 (≈ 10-task horizon, about one slot) keeps the eviction benefits and converges cleanly.
 
-For occasional manual transfers, the extension also provides **right-click files/folders → Upload to Colab**. Its experimental **Mount Server To Workspace** command lets VS Code edit remote files directly; this is distinct from synchronizing this local checkout. See the [official user guide](https://github.com/googlecolab/colab-vscode/wiki/User-Guide#working-with-files).
+**12 configurations × 3 seeds = 36 independently trained networks**, vmapped in one program; seeds give
+the ± bands in the convergence plots.
 
-After source changes, run this in your **local terminal**:
+### Baselines (paper Sec. V-A.2)
 
-```bash
-python3 colab.py
-```
+Greedy_latency (lowest estimated latency incl. pull wait — the strongest heuristic), Image_priority
+(cached image first, else random), Least_load (fewest jobs), Greedy_resources (highest free speed ×
+memory share), Random. All share the same physics, masks and traces.
 
-Accept VS Code's notebook reload if prompted, then rerun its source cell and configuration cell. The generator replaces only the source cell, preserving your settings, other cells and saved outputs. Each snapshot gets a different remote directory, so an existing training process retains its original sources. Restart training to use an updated snapshot. Dependency changes also require rerunning installation. Data and checkpoints remain on Drive; source snapshots are archived there for reproducibility. This is explicit source transfer through a notebook cell, not a live filesystem mount.
+## Outputs
 
-If Colab has preinstalled CUDA plugins, remove both plugin families **before** installing this project's pinned CUDA 12 stack. Mixed versions can cause `register_custom_type_handler`, `PJRT_Api already exists`, or fatal PJRT structure-size errors:
+`outputs/<run>/`: `training.csv` (per iteration × agent: rollout metrics + losses), `validation.csv`,
+`validation_baselines.csv`, `results.csv` (test, per trace), `summary.json`, `models.pkl` (best and last
+parameters), `progress.log`, `replays/*.json`, and `figures/`:
 
-```python
-%pip uninstall -y jax jaxlib jax-cuda12-plugin jax-cuda12-pjrt jax-cuda13-plugin jax-cuda13-pjrt
-%pip install --no-cache-dir -r requirements.txt "jax[cuda12]==0.6.2"
-```
+| Figure | Content |
+|---|---|
+| `convergence_vs_greedy` | headline: validation latency ÷ Greedy_latency over training, one line per policy, per disk, ± sd over seeds |
+| `convergence_avg_latency` / `_completion` / `_reward` | 3×4 grid (disk × policy): validation curve, mean ± sd over seeds, individual seeds, Greedy_latency reference, untrained value |
+| `training_dynamics` | reward, critic loss, policy loss, entropy, α, hit rate for all 12 agents (paper Fig. 4 / 9 style) |
+| `results` | test latency (log), on-time ratio, hit rate, evictions for all methods × policies × disks |
+| `eviction_pressure` | evictions / hit rate / latency vs disk size per policy, agent vs Greedy_latency |
+| `improvement_vs_greedy` | heat-map of % latency reduction and on-time gain vs Greedy_latency (paired by trace) |
+| `replay_*.mp4` / `.html` | the three animation scenarios |
 
-Restart the kernel after reinstalling if JAX/NumPy was already imported, then rerun the source cell and the GPU check. Do not reinstall only `jax` while leaving incompatible plugins installed. `jax`, `jaxlib`, `jax-cuda12-plugin` and `jax-cuda12-pjrt` must all be **0.6.2**, with no CUDA 13 plugin. The notebook's verification cell checks these versions and executes a compiled GPU operation before training.
+### Animation / replay
 
-Defaults are **4 eviction policies × 3 disk regimes × 3 seeds = 36 training runs**. There are 12 experimental configurations, each with three independently trained actors. Each SAC run also has two critics and their target copies. Extra networks do not themselves guarantee convergence. Every configuration gets the same architecture, budget and data splits; large-disk policies are mathematically redundant but remain separate controls.
+During `evaluate`, every method × config is replayed on test trace 0 and logged to
+`replays/<method>_<policy>_<disk>_test0.json` (first `--replay_slots` slots, default 200): static nodes
+(x, y, type), capacity and image sizes, and per task id, slot, type, image, chosen node, hit / coalesced
+/ miss / rejected, evicted images, pull start/finish, finish time, deadline and outcome. `viz.py` reads
+only these files (no simulator, JAX or GPU). Scenes: CPU node = square, GPU node = hexagon, disk bar of
+coloured image blocks (width = size, white→colour fill = pull progress, black outline = pinned); tasks
+(circle = CPU service, triangle = GPU service) fly from their origin to the chosen node; green ring =
+hit, orange arc = pull progress, evicted blocks fade red with the victim id, late tasks turn red. Each
+panel shows cumulative avg latency, hit rate, evictions, on-time ratio and a rolling-hit-rate sparkline;
+colours per image are identical across panels. Node positions are spread slightly for display only.
+Scenarios: (1) `agent_vs_greedy` — agent vs Greedy_latency, LRU, tight disk; (2) `four_policies` — the
+agent under LRU / LFU / FIFO / GDSF at tight disk (each policy's own trained network); (3)
+`disk_pressure` — large vs tight disk, LRU agent. The HTML is a single file (inline data + canvas JS,
+play/pause, seek slider, speed, light/dark). Test trace 0 spans 140 slots, so each video is ~56 s.
 
-Training uses 400 episodes, width 64, eight-observation histories, batch size 128, replay capacity approximately 30,000 decisions, and 0.25 gradient updates per new decision. Actor/critic learning rates are `1e-4`/`3e-4`, discount `.98`, target EMA `.005`. CPU or GPU can use the same commands and checkpoints. Start with a subset when estimating runtime:
+Note on the showcase: replays use seed 0 on test trace 0. That trace is a hard one for the LRU agent
+(seed 0 beats greedy on 8/16 test traces under LRU and loses on trace 0: 2.01 vs 1.89), so
+`replay_agent_vs_greedy` shows the agent slightly behind. `replay_agent_vs_greedy_FIFO` is a more
+typical case (seed 0 FIFO agent beats greedy on 13/16 test traces, trace 0: 1.87 vs 1.99). Averages
+over all traces and seeds are in the Results section. Any pair can be rendered with
+`python viz.py --replay outputs/run/replays/Agent_<P>_<D>_test0.json outputs/run/replays/Greedy_latency_<P>_<D>_test0.json --mode both`.
 
-```bash
-python run.py train --data data --output outputs/trial --device cpu \
-  --policies LRU --disks tight --seeds 0 --episodes 40 \
-  --width 16 --history 4 --batch-size 16 --eval-every 4 --update-ratio .1
-```
+## Results
 
-Select the same subset for `evaluate`. It requires the requested checkpoints and does not silently replace missing agents with heuristics. `--skip-existing` skips **completed** runs, which is useful for continuing the 36-run sweep. Use `--resume --episodes 400` with the original `--width` and `--history` to extend an interrupted or completed run to a total of 400 episodes. Weights, twin critics, targets, temperature and optimizer states are restored. Replay is rebuilt from `--warmup-episodes` on-policy training traces; behavior cloning is not repeated. Sampler state and trace order are restored when present in newer checkpoints; older checkpoints reset those deterministically. For checkpoints from the initial pilot/continued runs, add `--reward-mode completion`; `--reward-mode holding` is the unshaped causal ablation. Reward definitions cannot be changed on resume. This is a documented continuation, not a bit-for-bit replay-buffer resume. Existing CSVs and the best validation checkpoint are retained. Runs already at the requested episode target are skipped, so the same resume command can continue an interrupted seed sweep. Pickle checkpoints should come from trusted local experiments.
+Full run: 12 configurations × 3 seeds = 36 agents, 800 episodes each, γ = 0.9, RTX 5060 Laptop GPU,
+**59.5 min** of training (`outputs/run`). Test = 16 unseen traces (32 000 tasks); agent numbers are the
+mean over 3 seeds of the best-on-validation checkpoint. Latency in slots.
 
-## Methodological decisions
+**Convergence.** All 36 agents learn from a random policy (latency 8–17) to below the best heuristic
+within ~80 episodes; afterwards validation latency, critic loss (~0.13–0.16), entropy (at its 0.27
+target) and α (~0.018) stay flat for 700 episodes with tight seed bands
+(`figures/convergence_vs_greedy.png`, `convergence_avg_latency.png`, `training_dynamics.png`).
 
-The paper motivates heterogeneous compute, serial image pulls, CNN spatial features, GRU history, and SAC. Its main text specifies 20 nodes and 50 images, while the author config uses 15 nodes. The supplied code also references an undefined `RANDOM_SEED`, discards popped tasks when no node is feasible, produces same-task next observations, lacks eviction, and does not drain outstanding jobs before ending an episode. Slot-wide actions are selected before their memory/disk reservations are applied. We rebuild the simulator and learning loop rather than silently treating that implementation as a faithful reference.
+**Agent vs the best heuristic (Greedy_latency), test traces**
 
-The PDF's prose assumes cached images persist, while equation (14) reverses the monotonicity inequality. Supplementary appendices and an exact experimental config were not supplied. The numerical units also leave ambiguity between code-scale compute values and physical GHz/FLOPS. The following are explicit **reconstruction choices and extensions**. The corrected reward implementation is covered in the Learning and Potential shaping items below:
+| disk | policy | agent latency | Greedy_latency | Δ latency | agent on-time | greedy on-time | agent hit | greedy hit | agent evictions | greedy evictions |
+|---|---|---|---|---|---|---|---|---|---|---|
+| tight | LRU | 2.222 | 2.292 | −3.1% | 0.859 | 0.852 | 0.608 | 0.586 | 442 | 498 |
+| tight | LFU | 2.215 | 2.266 | −2.2% | 0.860 | 0.854 | 0.612 | 0.591 | 440 | 489 |
+| tight | FIFO | 2.238 | 2.361 | −5.2% | 0.858 | 0.844 | 0.600 | 0.566 | 457 | 516 |
+| tight | GDSF | 2.179 | 2.295 | −5.0% | 0.863 | 0.847 | 0.619 | 0.587 | 426 | 492 |
+| medium | LRU | 1.359 | 1.435 | −5.3% | 0.951 | 0.940 | 0.854 | 0.843 | 127 | 154 |
+| medium | LFU | 1.369 | 1.440 | −5.0% | 0.950 | 0.939 | 0.846 | 0.834 | 140 | 167 |
+| medium | FIFO | 1.406 | 1.521 | −7.5% | 0.947 | 0.933 | 0.844 | 0.822 | 134 | 175 |
+| medium | GDSF | 1.389 | 1.433 | −3.0% | 0.948 | 0.939 | 0.842 | 0.838 | 135 | 160 |
+| large | LRU | 1.161 | 1.167 | −0.5% | 0.970 | 0.966 | 0.921 | 0.920 | 0 | 0 |
+| large | LFU | 1.164 | 1.167 | −0.3% | 0.969 | 0.966 | 0.920 | 0.920 | 0 | 0 |
+| large | FIFO | 1.165 | 1.167 | −0.1% | 0.968 | 0.966 | 0.919 | 0.920 | 0 | 0 |
+| large | GDSF | 1.166 | 1.167 | −0.1% | 0.969 | 0.966 | 0.921 | 0.920 | 0 | 0 |
 
-- **Topology and services.** Default: 14 CPU and six GPU nodes; 50 images of 3–15 GB. Every trace starts with empty node caches. Node CPU rates are 3–6.5 normalized compute units/s and GPU rates 10–16; CPU/GPU memory is 80–180/16–32 GB. Bandwidth is 2–6 Gbit/s. CPU service work is 1.5–2.5 units, GPU work 2–5. GPU services incur four times their work on CPU. CPU services cannot run on GPU nodes. These normalized compute units preserve hardware preference without claiming literal hardware calibration.
-- **Concurrency.** Every arrival slot is 2 seconds. Tasks in a slot are admitted sequentially and immediately change state. Active computation shares node speed equally. Starts and completions trigger exact rate reallocation; GPU aggregate efficiency is multiplied by `(1-.05)^(active_count-1)`. GPU memory-transfer overhead is omitted. Memory is conservatively reserved from admission to completion, including image wait time. Task images remain pinned throughout that interval.
-- **Transfers.** Each node serializes image downloads at `8 × image_GB / bandwidth_Gbit_per_s`; duplicate in-flight requests share one pull. Disk space is reserved before a pull starts. Uploads use independent distance-attenuated effective links `B/(1+(distance/35)^2)` and overlap image preparation; compute starts after both finish. This replaces unspecified radio constants and does not simulate shared wireless interference, cloud offload, registry congestion, or image layers.
-- **Disk regimes.** Per-node capacity is `max(largest_image, fraction × total_catalogue_size)`. Fractions: **tight .045**, **medium .100**, **large 1.010**. Tight and medium were selected using a separate calibration trace and the Greedy_latency heuristic; this is workload calibration, not an unbiased held-out result. One 400-slot calibration trace gave 471/96/0 LRU evictions. Counts depend on the scheduler and trace. Large capacity guarantees no eviction even if every image is cached on every node. Fractions are stored in `world.json`; edit them there before starting a new experiment, or change `DISKS` before generating a new dataset.
-- **Eviction.** Pulling and pinned images are ineligible. LRU minimizes last-access sequence; FIFO minimizes insertion sequence; LFU minimizes cache-resident reference count with LRU ties. GDSF uses `H = L + frequency × retrieval_cost / image_size`, raises per-node `L` to `max(L, evicted_key)` (pinned entries may retain older keys), and resets frequency upon reinsertion. Retrieval cost is `1 + 8 × size / bandwidth` seconds. The fixed registry cost prevents the size term cancelling completely. Eviction ties resolve deterministically. Reference counts include coalesced pull references. A hit means the image is **ready at admission**, not merely reserved.
-- **Infeasibility.** When no compatible node has memory plus reclaimable disk capacity, record an explicit rejection. The rejection action is masked unless forced. Failure latency equals deadline allowance plus 50 seconds, yielding normalized reward `-1`. Tasks are never silently removed or retried. All admitted jobs drain after the last arrival. Rejections count as failures in completion/hit metrics and incur their explicit finite penalty in latency metrics.
-- **Workloads.** Services persist and recur. Requests use a shuffled Zipf distribution (exponent 1.1), a 25% repeat-last-service component, a rotating hot set every 60 slots, bounded variable intensity, and 12% burst slots. Service work has ±20% jitter; deadlines are uniform 20–50 seconds after arrival. Deadlines are longer than the author's 3–5 slots because GB/Gbit conversion makes cold pulls much longer. Catalogue/topology are shared; request sequences are disjoint through `SeedSequence([catalogue_seed, split_tag, trace_index])`. Train/validation/test tags are 11/22/333; a separate calibration domain uses tag 33. Generalization here means new workloads on a known deployment and catalogue, not unseen services or topologies.
-- **State.** Each node exposes resources, current-image readiness, estimated immediate latency, cache metadata for every image, current image identity and causal recent demand. Observation version 2 also exposes the known fraction of episode slots remaining; version-1 datasets/checkpoints remain supported. These are online features; the estimate excludes future arrivals. Full cache identities/ages/frequencies/priorities let the policy distinguish eviction consequences. Priorities/ages are normalized and bounded as features. Image sizes are fixed for a catalogue and may be learned through image identity.
-- **Network.** Per-node projection → width-3 convolution across a stable CPU/GPU-and-x node ordering → mean/max pooling → GRU → shared per-node scoring head. Actor, twin critics and targets have separate parameters. Both critics also use history. This differs from the supplied flattened-feature CNN and actor-only GRU. GRU state is recomputed from the last eight observations, with padding at trace boundaries, rather than carried over an entire episode. Replay never crosses episode boundaries or stores stale hidden states.
-- **Learning.** Masked discrete SAC sums exactly over valid actions. Both target and actor distributions use feasibility masks; forced rejection keeps masks nonempty. The twin-critic loss is Huber, gradients are clipped, and temperature targets `.65 × log(number_of_valid_actions)`. The base reward is `(current_task_deadline_allowance - interval_latency_cost)/50`. Interval cost integrates the number of admitted, unfinished tasks over elapsed simulator time, plus an explicit rejection cost. The final transition includes the complete drain. Its undiscounted episode sum exactly equals total deadline slack / 50, but every reward depends only on the current decision and the following interval. The next state is the next scheduling decision.
-- **Potential shaping (default).** Sparse interval costs are shaped by `.98*Phi(next_state)-Phi(current_state)`, with `Phi=-predicted_remaining_holding_cost/50`. The prediction privately drains only already admitted work, assuming no future arrivals; it reads no future requests and does not mutate the simulator. Initial/terminal potentials are zero. This telescopes out of the discounted return, preserving the base discounted objective while providing immediate credit for queue growth and externalities. `--reward-mode holding` disables shaping. This is an explicit model-assisted training choice; no projection or heuristic is used by the learned actor at evaluation. `--reward-mode completion` retains the initial, retrospective per-task reward only for reproducibility; those rewards can depend on later actions and are not the current default. Replay is uniform over retained decisions and stores observations in float16, reconstructed as float32 batches. Whole episodes are evicted, so one episode may exceed the nominal capacity.
-- **Warm start.** Two training traces are scheduled by Greedy_latency; the actor gets 100 supervised behavior-cloning updates before SAC. This is disclosed assistance, not a paper-faithful baseline. Set `--bc-updates 0` for the pure-RL ablation; set `--warmup-episodes 0` too to remove heuristic replay. Episode zero is logged **after** warm start. There is no heuristic fallback hidden inside the agent at evaluation.
-- **Local-feature ablation.** `--local-branch` adds a zero-initialized, fully learned affine score from each node's first 18 immediate features alongside its CNN–GRU score. This preserves the identity of local resources/readiness while the convolution mixes neighbouring nodes. It applies to both actor and critics, has no fixed latency weights or heuristic fallback, and is disabled by default. Checkpoints record whether it is present; older checkpoints load without it. Resuming retains the saved architecture.
-- **Baselines.** Greedy_latency includes upload, image waiting and current compute contention; Image_priority prefers ready images then estimated latency; Least_load counts admitted unfinished jobs; Greedy_resources uses speed × remaining-memory fraction; Random samples feasible nodes. All share physics, masks, traces and rejection handling. Other paper DRL baselines (DQN/PPO/DDPG/GNN) are outside this focused extension.
+**All methods (mean over the 4 eviction policies)**
 
-The simulator is a conservative research abstraction. Synthetic traces, normalized compute, fixed bandwidth and small numbers of training seeds limit real-system conclusions. Deadline success is measured, not guaranteed by admission control. Changing disk size can change feasible actions and placements, so even a large disk need not improve an untrained agent.
+| method | tight latency | tight on-time | medium latency | medium on-time | large latency | large on-time |
+|---|---|---|---|---|---|---|
+| **CHES agent** | **2.21** | **0.860** | **1.38** | **0.949** | **1.16** | **0.969** |
+| Greedy_latency | 2.30 | 0.849 | 1.46 | 0.938 | 1.17 | 0.966 |
+| Greedy_resources | 4.44 | 0.583 | 6.81 | 0.421 | 2.36 | 0.842 |
+| Least_load | 5.11 | 0.526 | 6.74 | 0.411 | 2.98 | 0.778 |
+| Image_priority | 8.88 | 0.545 | 8.74 | 0.588 | 8.38 | 0.600 |
+| Random | 9.78 | 0.385 | 13.10 | 0.250 | 15.87 | 0.330 |
 
-## Convergence and results
+Findings:
+- The agent beats every heuristic in **all 12 configurations**. Its advantage over Greedy_latency
+  appears exactly where the disk is constrained (2–8 % lower latency, +0.6–1.6 pp on-time) and vanishes
+  when it is not (large disk: −0.1 to −0.5 %, essentially a tie, since greedy is near-optimal without
+  eviction).
+- The agent **evicts 10–23 % less** and gets higher hit rates than greedy under the same eviction
+  policy: it learns where to place images so that popular ones are not pushed out (the would-be-victim
+  popularity feature + the critic's future term).
+- Eviction policy matters less for the learned scheduler than for greedy: greedy's spread across
+  policies on the tight disk is 2.27–2.36, the agent's 2.18–2.24. GDSF is the best policy for the agent
+  under heavy eviction pressure; FIFO is the worst for greedy, and the agent recovers most of FIFO's loss.
+- Heuristics that ignore image state (Least_load, Greedy_resources, Random) collapse as disks shrink,
+  because they trigger many cold pulls (≈ 850–900 evictions per trace on the tight disk).
+- As in the paper, Greedy_latency is the strongest heuristic and Image_priority (cached-first) is poor
+  because it ignores heterogeneous compute and congestion.
 
-Validation traces are fixed and never enter replay. Select `best.pkl` by mean validation deadline slack, then evaluate that frozen checkpoint on test traces. `last.pkl` preserves the final iterate. Evaluation writes unrounded per-trace/per-seed metrics to `results.csv`. `training.csv` contains actual rollout metrics (its `reward` column is mean realized deadline slack / 50) plus losses/entropy/temperature/gradient norms; `signals.csv` separately records the actual learning-reward mean and discounted learning return; `validation.csv` includes episode zero and regular deterministic evaluations. Source settings, device/version information, catalogue SHA-256 and per-run completion records accompany the checkpoints.
+The first full run with the paper's γ = 0.98 is kept in `outputs/run_v1_ent0.3` (stopped at 288
+episodes) and the 240-episode single-seed checks in `outputs/check_*`, for the comparison above.
 
-`plot` generates:
+## Limitations
 
-- `figures/convergence.png` and `.pdf`: all requested policy/disk configurations, individual seed curves, seed mean ± one standard deviation, and a **validation** Greedy_latency reference. No smoothing or fabricated interpolation is applied to recorded points.
-- `figures/results.png` and `.pdf`: mean latency, on-time fraction, cache hit fraction and eviction counts for every method/policy/disk setting.
-- `figures/diagnostics.png` and `.pdf`: critic loss, entropy and temperature at the tightest requested disk.
-- `summary.json`: 95% percentile intervals from crossed resampling of training seeds and shared test traces; heuristics have one deterministic copy per trace. One seed or one trace cannot estimate its missing variance component.
-- `paired_comparisons.json`: agent-minus-Greedy_latency test latency with the trace pairing retained. Negative differences favor the agent.
-- `convergence_diagnostics.json`: initial/final validation reward, final-quarter slope, number of observations and seeds. Short smoke runs explicitly report insufficient evidence. A flat curve alone is not a success criterion: compare validation return, seed variability, success rate and the greedy reference.
-
-The full 36-run GPU sweep remains to be run on a GPU. CPU smoke results validate mechanics only. The initial `outputs/pilot`, `outputs/continued`, and `outputs/local_ablation` used the legacy completion reward and are retained as diagnostic experiments; they do not validate the corrected causal trainer. Current smoke artifacts are under `outputs/smoke_current`; `outputs/causal` and `outputs/potential` compare causal rewards without/with potential shaping. The current three-seed CPU run uses shorter traces and a width-16 network; its exact commands and measured results are recorded in `outputs/potential/CPU_VALIDATION.md`. Those curves are evidence of learning, not proof of the paper's gains or convergence in all 12 configurations. Historical pilot reports are marked explicitly.
-
-## Replay and animation
-
-Evaluation records `outputs/<run>/replays/<method>_<policy>_<disk>_<trace>.json`, default first 200 slots (`--replay_slots N`). A log contains static node positions/types/capacities, image sizes, cache snapshots per slot, and per-task origin/type/image/node, hit/coalesced/miss, victim records, pull start/finish, upload completion, actual finish and deadline outcome. Cache snapshots reference image IDs; pin state and download progress are reconstructed from the recorded events. Recording does not change simulator decisions.
-
-```bash
-python viz.py --replay outputs/full/replays/Agent_LRU_tight_test_0000.json --mode html --fps 10
-python viz.py --replay outputs/full/replays/Agent_LRU_tight_test_0000.json --mode mp4 --fps 10
-# Two or four paths compare panels in lockstep; all must have the same trace.
-python viz.py --replay outputs/full/replays/scenario_four_policies.json --mode html
-```
-
-`viz.py` imports no simulator, JAX, torch or GPU code. HTML mode also avoids NumPy and matplotlib. Exported HTML embeds JSON, CSS and canvas JavaScript, including play/pause, speed control, a seek slider and responsive layouts. CPU nodes are squares, GPU nodes hexagons; task shapes distinguish preference; image colors are consistent across panels. Disk blocks show reserved size and pull progress with white pin outlines, red eviction fades and victim labels. Late tasks turn red. Live metrics use only outcomes completed by the current replay time; on-time/arrived consequently differs from the final eventual-success metric until all work finishes. Simulated transfer travel is slowed visually; timestamps are not changed. Playback shows .75 screen seconds per simulator slot at 1× speed; FPS controls video sampling.
-
-`python viz.py --scenarios --root outputs/full` emits `replay_agent_vs_greedy`, `replay_four_policies`, and `replay_disk_pressure`, each as `.html` and `.mp4`/`.gif`. The four-policy and disk comparisons use the **same actor trained on LRU/tight**, not four separately trained policies. Benchmark results use the separately trained policies. These controlled comparisons test intervention on a frozen actor and may include distribution shift. `--smoke --root outputs/smoke` renders the first 16 slots of all three scenarios.
-
-To produce controlled scenarios from a single trained checkpoint:
-
-```bash
-python run.py replay --data data --output outputs/showcase \
-  --checkpoint outputs/full/models/LRU_tight_s0/best.pkl --replay_slots 200
-python viz.py --scenarios --root outputs/showcase --fps 10
-```
-
-## References
-
-The local PDF is the primary CHES source. Discrete SAC follows [Christodoulou (2019)](https://arxiv.org/abs/1910.07207). The GDSF key and resident-frequency update are described in [Yang et al., *A Data Cube Model for Prediction-Based Web Prefetching*, §4.2](https://cse.hkust.edu.hk/~qyang/Docs/2002/datacube.pdf); our retrieval-cost choice is stated above. JAX installation details come from the [official JAX documentation](https://docs.jax.dev/en/latest/installation.html).
-
-Potential shaping follows [Ng, Harada and Russell (1999)](https://people.eecs.berkeley.edu/~pabbeel/cs287-fa09/readings/NgHaradaRussell-shaping-ICML1999.pdf). Tests check the discounted-return telescoping identity and projected-drain equality directly.
+Synthetic workloads and normalised compute units (as in the paper); compute time is fixed at admission
+from the concurrency at that moment (paper Eq. 4–5) rather than re-shared when later jobs arrive; no
+layer sharing, registry congestion or cloud offload; generalisation is to new request sequences on a
+fixed topology and catalogue.

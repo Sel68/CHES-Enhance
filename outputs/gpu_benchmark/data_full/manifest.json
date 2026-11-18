@@ -1,0 +1,1 @@
+{"config":{"seed":2026,"cpu_nodes":14,"gpu_nodes":6,"images":50,"slots":400,"slot_seconds":2.0,"min_tasks":2,"max_tasks":12,"phase_slots":60,"gpu_contention":0.05},"counts":{"train":64,"val":4,"test":8},"generator_version":3,"split_seed_tags":{"train":11,"val":22,"test":333,"calibration":33},"observation_version":2}

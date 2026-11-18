@@ -1,0 +1,844 @@
+CHES GPU benchmark: preparing isolated WSL environment.
+[2026-11-11T01:21:38+05:00] Downloading isolated environment manager
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0  0      0   0      0   0      0      0      0           00:01              0  0      0   0      0   0      0      0      0           00:02              0  0      0   0      0   0      0      0      0           00:02              0
+  0      0   0      0   0      0      0      0           00:02              0  0      0   0      0   0      0      0      0           00:02              0  0      0   0      0   0      0      0      0           00:02              0
+  0      0   0      0   0      0      0      0           00:02              0  0 15.89M   0      0   0      0      0      0           00:03              0  0 15.89M   0  99623   0      0  21539      0   12:54   00:04   12:50  48150  1 15.89M   1 323.9k   0      0  58962      0   04:42   00:05   04:37 105.5k  2 15.89M   2 479.9k   0      0  74158      0   03:44   00:06   03:38 117.8k  3 15.89M   3 576.0k   0      0  76964      0   03:36   00:07   03:29 112.7k  4 15.89M   4 671.9k   0      0  73915      0   03:45   00:09   03:36 116.9k  4 15.89M   4 799.9k   0      0  78125      0   03:33   00:10   03:23 119.8k  5 15.89M   5 817.2k   0      0  71779      0   03:52   00:11   03:41  83736  5 15.89M   5 887.9k   0      0  71467      0   03:53   00:12   03:41  68546  6 15.89M   6  1.06M   0      0  81258      0   03:25   00:13   03:12  86697  7 15.89M   7  1.20M   0      0  86162      0   03:13   00:14   02:59 104.6k  8 15.89M   8  1.34M   0      0  84608      0   03:17   00:16   03:01  95640  8 15.89M   8  1.34M   0      0  79339      0   03:30   00:17   03:13  93601  9 15.89M   9  1.45M   0      0  81071      0   03:25   00:18   03:07 98.65k 10 15.89M  10  1.65M   0      0  86883      0   03:11   00:19   02:52  99310 11 15.89M  11  1.78M   0      0  89314      0   03:06   00:20   02:46  96804 12 15.89M  12  2.00M   0      0  95691      0   02:54   00:21   02:33 127.5k 13 15.89M  13  2.18M   0      0  99622      0   02:47   00:23   02:24 165.5k 15 15.89M  15  2.40M   0      0 102.0k      0   02:39   00:24   02:15 184.2k 15 15.89M  15  2.43M   0      0 98.75k      0   02:44   00:25   02:19 151.0k 15 15.89M  15  2.43M   0      0  97268      0   02:51   00:26   02:25 125.6k 15 15.89M  15  2.43M   0      0  92668      0   02:59   00:27   02:32  80824 15 15.89M  15  2.43M   0      0  89418      0   03:06   00:28   02:38  46900 15 15.89M  15  2.43M   0      0  86388      0   03:12   00:29   02:43   6012 15 15.89M  15  2.43M   0      0  83557      0   03:19   00:30   02:49      0 15 15.89M  15  2.45M   0      0  79602      0   03:29   00:32   02:57   2721 15 15.89M  15  2.52M   0      0  79504      0   03:29   00:33   02:56  16954 16 15.89M  16  2.54M   0      0  77031      0   03:36   00:34   03:02  18867 16 15.89M  16  2.54M   0      0  74745      0   03:43   00:35   03:08  18689 16 15.89M  16  2.62M   0      0  74812      0   03:42   00:36   03:06  31716 19 15.89M  19  3.05M   0      0  84922      0   03:16   00:37   02:39 113.3k 21 15.89M  21  3.49M   0      0  94562      0   02:56   00:38   02:18 182.6k 25 15.89M  25  3.98M   0      0 102.4k      0   02:38   00:39   01:59 285.4k 27 15.89M  27  4.34M   0      0 108.8k      0   02:29   00:40   01:49 356.7k 29 15.89M  29  4.71M   0      0 115.3k      0   02:21   00:41   01:40 420.3k 32 15.89M  32  5.13M   0      0 122.7k      0   02:12   00:42   01:30 417.9k 33 15.89M  33  5.34M   0      0 124.1k      0   02:11   00:44   01:27 359.2k 34 15.89M  34  5.43M   0      0 123.3k      0   02:11   00:45   01:26 279.7k 34 15.89M  34  5.49M   0      0 122.0k      0   02:13   00:46   01:27 224.9k 34 15.89M  34  5.54M   0      0 120.3k      0   02:15   00:47   01:28 159.7k 35 15.89M  35  5.66M   0      0 120.5k      0   02:15   00:48   01:27 102.6k 36 15.89M  36  5.76M   0      0 119.5k      0   02:16   00:49   01:27  83150 36 15.89M  36  5.84M   0      0 117.1k      0   02:18   00:51   01:27  72163 37 15.89M  37  5.98M   0      0 117.4k      0   02:18   00:52   01:26  84271 38 15.89M  38  6.09M   0      0 117.2k      0   02:18   00:53   01:25  95558 39 15.89M  39  6.25M   0      0 118.1k      0   02:17   00:54   01:23 99.56k 40 15.89M  40  6.38M   0      0 118.2k      0   02:17   00:55   01:22 107.6k 40 15.89M  40  6.38M   0      0 116.2k      0   02:20   00:56   01:24 106.8k 40 15.89M  40  6.39M   0      0 114.2k      0   02:22   00:57   01:25  83787 41 15.89M  41  6.61M   0      0 116.1k      0   02:20   00:58   01:22 103.8k 42 15.89M  42  6.77M   0      0 115.8k      0   02:20   00:59   01:21  95620 42 15.89M  42  6.79M   0      0 114.0k      0   02:22   01:00   01:22  75716 43 15.89M  43  6.93M   0      0 114.5k      0   02:22   01:01   01:21 97.80k 44 15.89M  44  7.14M   0      0 115.9k      0   02:20   01:03   01:17 132.9k 45 15.89M  45  7.21M   0      0 115.2k      0   02:21   01:04   01:17 106.7k 46 15.89M  46  7.39M   0      0 116.3k      0   02:19   01:05   01:14 122.9k 47 15.89M  47  7.59M   0      0 117.7k      0   02:18   01:06   01:12 161.0k 49 15.89M  49  7.90M   0      0 120.6k      0   02:14   01:07   01:07 195.5k 50 15.89M  50  8.05M   0      0 121.1k      0   02:14   01:08   01:06 185.1k 52 15.89M  52  8.40M   0      0 124.5k      0   02:10   01:09   01:01 240.9k 55 15.89M  55  8.79M   0      0 128.3k      0   02:06   01:10   00:56 280.7k 57 15.89M  57  9.21M   0      0 132.5k      0   02:02   01:11   00:51 325.2k 60 15.89M  60  9.68M   0      0 137.0k      0   01:58   01:12   00:46 345.5k 63 15.89M  63 10.17M   0      0 142.0k      0   01:54   01:13   00:41 413.2k 67 15.89M  67 10.70M   0      0 147.3k      0   01:50   01:14   00:36 450.2k 70 15.89M  70 11.26M   0      0 153.0k      0   01:46   01:15   00:31 487.9k 73 15.89M  73 11.65M   0      0 156.2k      0   01:44   01:16   00:28 481.4k 74 15.89M  74 11.87M   0      0 157.1k      0   01:43   01:17   00:26 447.0k 76 15.89M  76 12.15M   0      0 158.7k      0   01:42   01:18   00:24 404.1k 77 15.89M  77 12.34M   0      0 158.8k      0   01:42   01:19   00:23 325.1k 79 15.89M  79 12.60M   0      0 160.2k      0   01:41   01:20   00:21 266.1k 80 15.89M  80 12.85M   0      0 161.4k      0   01:40   01:21   00:19 238.6k 83 15.89M  83 13.26M   0      0 164.5k      0   01:38   01:22   00:16 276.0k 88 15.89M  88 14.05M   0      0 172.3k      0   01:34   01:23   00:11 378.6k 92 15.89M  92 14.74M   0      0 178.4k      0   01:31   01:24   00:07 485.8k 93 15.89M  93 14.79M   0      0 176.4k      0   01:32   01:25   00:07 419.9k 93 15.89M  93 14.88M   0      0 175.4k      0   01:32   01:26   00:06 387.7k 97 15.89M  97 15.55M   0      0 180.6k      0   01:30   01:28   00:02 415.9k100 15.89M 100 15.89M   0      0 183.4k      0   01:28   01:28         415.9k100 15.89M 100 15.89M   0      0 183.4k      0   01:28   01:28         415.9k100 15.89M 100 15.89M   0      0 183.4k      0   01:28   01:28         415.9k
+Downloading cpython-3.12.16-linux-x86_64-gnu (download) (32.9MiB)
+ Downloaded cpython-3.12.16-linux-x86_64-gnu (download)
+Using CPython 3.12.16
+Creating virtual environment at: /home/abdulrafay/.local/share/ches-enhance-benchmark/venv
+Activate with: source /home/abdulrafay/.local/share/ches-enhance-benchmark/venv/bin/activate
+[2026-11-11T01:24:19+05:00] Installing JAX CUDA 13 and benchmark dependencies
+Using Python 3.12.16 environment at: /home/abdulrafay/.local/share/ches-enhance-benchmark/venv
+Resolved 39 packages in 29.33s
+Downloading pygments (1.2MiB)
+Downloading jax (3.3MiB)
+Downloading matplotlib (9.4MiB)
+Downloading nvidia-nccl-cu13 (291.0MiB)
+Downloading nvidia-cuda-nvcc (44.8MiB)
+Downloading nvidia-cuda-cccl (3.9MiB)
+Downloading nvidia-nvvm (71.7MiB)
+Downloading numpy (16.0MiB)
+Downloading nvidia-cuda-cupti (12.0MiB)
+Downloading jax-cuda13-pjrt (128.7MiB)
+Downloading pillow (6.8MiB)
+Downloading jax-cuda13-plugin (7.9MiB)
+Downloading nvidia-cudnn-cu13 (492.9MiB)
+Downloading nvidia-cusparse (219.7MiB)
+Downloading nvidia-cublas (423.7MiB)
+Downloading nvidia-cuda-nvrtc (55.5MiB)
+Downloading kiwisolver (1.4MiB)
+Downloading scipy (33.7MiB)
+Downloading nvidia-cusolver (248.0MiB)
+Downloading nvidia-nvjitlink (44.5MiB)
+Downloading fonttools (5.2MiB)
+Downloading jaxlib (82.8MiB)
+Downloading nvidia-nvshmem-cu13 (173.7MiB)
+Downloading nvidia-cuda-runtime (2.4MiB)
+Downloading nvidia-cufft (157.4MiB)
+Downloading nvidia-cuda-runtime (2.4MiB)
+Downloading pillow (6.8MiB)
+Downloading nvidia-cufft (157.4MiB)
+Downloading nvidia-nvjitlink (44.5MiB)
+Downloading scipy (33.7MiB)
+Downloading jax-cuda13-pjrt (128.7MiB)
+Downloading fonttools (5.2MiB)
+Downloading jaxlib (82.8MiB)
+Downloading jax-cuda13-plugin (7.9MiB)
+Downloading nvidia-nvshmem-cu13 (173.7MiB)
+Downloading jax (3.3MiB)
+Downloading pygments (1.2MiB)
+Downloading nvidia-cuda-nvcc (44.8MiB)
+Downloading nvidia-nccl-cu13 (291.0MiB)
+Terminated                 "$uv" pip install --python "$base/venv/bin/python" 'jax[cuda13]' 'optax==0.2.8' 'numpy>=1.26,<3' 'matplotlib>=3.9,<4' 'pillow>=10' 'pytest>=6.2.5'
+[2026-11-11T01:28:01+05:00] Installing dependencies with 3 parallel downloads and extended timeout
+Using Python 3.12.16 environment at: /home/abdulrafay/.local/share/ches-enhance-benchmark/venv
+Resolved 39 packages in 14ms
+Downloading nvidia-cudnn-cu13 (492.9MiB)
+Downloading nvidia-cublas (423.7MiB)
+Downloading jax-cuda13-pjrt (128.7MiB)
+[01:33:56] Setup active: dependency cache 58.6 MiB; change 58.6 MiB since previous check. Training has not started.
+[01:34:26] Setup active: dependency cache 89.6 MiB; change 31.0 MiB since previous check. Training has not started.
+[01:34:56] Setup active: dependency cache 99.4 MiB; change 9.8 MiB since previous check. Training has not started.
+[01:35:26] Setup active: dependency cache 105.3 MiB; change 5.9 MiB since previous check. Training has not started.
+[01:35:56] Setup active: dependency cache 105.3 MiB; change 0.0 MiB since previous check. Training has not started.
+Downloading nvidia-cublas (423.7MiB)
+Downloading nvidia-cudnn-cu13 (492.9MiB)
+Downloading jax-cuda13-pjrt (128.7MiB)
+[01:36:26] Setup active: dependency cache 17.4 MiB; change 0.0 MiB since previous check. Training has not started.
+[01:36:36] Automatic pipeline active: waiting for setup, then GPU learning checks, training, and evaluation.
+[01:36:56] Setup active: dependency cache 22.3 MiB; change 4.9 MiB since previous check. Training has not started.
+Terminated                 "$base/tools/uv-x86_64-unknown-linux-gnu/uv" pip install --python "$base/venv/bin/python" 'jax[cuda13]' 'optax==0.2.8' 'numpy>=1.26,<3' 'matplotlib>=3.9,<4' 'pillow>=10' 'pytest>=6.2.5'
+[01:37:17] Continuing dependency installation with timeouts adjusted for the slow connection.
+[2026-11-11T01:37:17+05:00] Installing dependencies with 3 parallel downloads and a 4-hour timeout for the slow connection
+Using Python 3.12.16 environment at: /home/abdulrafay/.local/share/ches-enhance-benchmark/venv
+Resolved 39 packages in 2.80s
+Downloading jax-cuda13-plugin (7.9MiB)
+Downloading nvidia-cuda-nvrtc (55.5MiB)
+Downloading scipy (33.7MiB)
+[01:37:26] Setup active: dependency cache 61.8 MiB; change 39.5 MiB since previous check. Training has not started.
+[01:37:56] Setup active: dependency cache 114.8 MiB; change 53.0 MiB since previous check. Training has not started.
+ Downloaded jax-cuda13-plugin
+Downloading nvidia-cudnn-cu13 (492.9MiB)
+[01:38:26] Setup active: dependency cache 258.4 MiB; change 143.5 MiB since previous check. Training has not started.
+ Downloaded scipy
+Downloading nvidia-cublas (423.7MiB)
+[01:38:56] Setup active: dependency cache 385.3 MiB; change 126.9 MiB since previous check. Training has not started.
+ Downloaded nvidia-cuda-nvrtc
+Downloading nvidia-nccl-cu13 (291.0MiB)
+[01:39:26] Setup active: dependency cache 444.4 MiB; change 59.1 MiB since previous check. Training has not started.
+[01:39:56] Setup active: dependency cache 484.2 MiB; change 39.9 MiB since previous check. Training has not started.
+[01:40:26] Setup active: dependency cache 621.3 MiB; change 137.1 MiB since previous check. Training has not started.
+[01:40:56] Setup active: dependency cache 689.5 MiB; change 68.2 MiB since previous check. Training has not started.
+[01:41:26] Setup active: dependency cache 798.7 MiB; change 109.3 MiB since previous check. Training has not started.
+[01:41:56] Setup active: dependency cache 908.7 MiB; change 109.9 MiB since previous check. Training has not started.
+[01:42:26] Setup active: dependency cache 938.6 MiB; change 30.0 MiB since previous check. Training has not started.
+[01:42:56] Setup active: dependency cache 959.4 MiB; change 20.8 MiB since previous check. Training has not started.
+[01:43:26] Setup active: dependency cache 1003.7 MiB; change 44.3 MiB since previous check. Training has not started.
+[01:43:56] Setup active: dependency cache 1084.5 MiB; change 80.9 MiB since previous check. Training has not started.
+[01:44:26] Setup active: dependency cache 1156.5 MiB; change 71.9 MiB since previous check. Training has not started.
+[01:44:56] Setup active: dependency cache 1183.7 MiB; change 27.2 MiB since previous check. Training has not started.
+[01:45:26] Setup active: dependency cache 1255.1 MiB; change 71.3 MiB since previous check. Training has not started.
+[01:45:56] Setup active: dependency cache 1277.6 MiB; change 22.5 MiB since previous check. Training has not started.
+[01:46:26] Setup active: dependency cache 1307.2 MiB; change 29.7 MiB since previous check. Training has not started.
+[01:46:56] Setup active: dependency cache 1380.5 MiB; change 73.3 MiB since previous check. Training has not started.
+[01:47:26] Setup active: dependency cache 1441.8 MiB; change 61.3 MiB since previous check. Training has not started.
+[01:47:56] Setup active: dependency cache 1449.7 MiB; change 7.8 MiB since previous check. Training has not started.
+[01:48:26] Setup active: dependency cache 1531.1 MiB; change 81.4 MiB since previous check. Training has not started.
+ Downloaded nvidia-nccl-cu13
+Downloading nvidia-cusolver (248.0MiB)
+[01:48:56] Setup active: dependency cache 1714.9 MiB; change 183.9 MiB since previous check. Training has not started.
+[01:49:26] Setup active: dependency cache 1942.8 MiB; change 227.9 MiB since previous check. Training has not started.
+[01:49:57] Setup active: dependency cache 2029.2 MiB; change 86.4 MiB since previous check. Training has not started.
+[01:50:27] Setup active: dependency cache 2260.8 MiB; change 231.6 MiB since previous check. Training has not started.
+ Downloaded nvidia-cublas
+Downloading nvidia-cusparse (219.7MiB)
+ Downloaded nvidia-cudnn-cu13
+Downloading nvidia-nvshmem-cu13 (173.7MiB)
+[01:50:57] Setup active: dependency cache 2482.5 MiB; change 221.6 MiB since previous check. Training has not started.
+ Downloaded nvidia-cusolver
+Downloading nvidia-cufft (157.4MiB)
+[01:51:27] Setup active: dependency cache 2577.4 MiB; change 94.9 MiB since previous check. Training has not started.
+[01:51:57] Setup active: dependency cache 2688.8 MiB; change 111.5 MiB since previous check. Training has not started.
+[01:52:27] Setup active: dependency cache 2734.1 MiB; change 45.3 MiB since previous check. Training has not started.
+[01:52:57] Setup active: dependency cache 2780.4 MiB; change 46.3 MiB since previous check. Training has not started.
+[01:53:27] Setup active: dependency cache 2845.2 MiB; change 64.8 MiB since previous check. Training has not started.
+[01:53:57] Setup active: dependency cache 2885.8 MiB; change 40.5 MiB since previous check. Training has not started.
+[01:54:27] Setup active: dependency cache 2969.7 MiB; change 84.0 MiB since previous check. Training has not started.
+[01:54:57] Setup active: dependency cache 3053.4 MiB; change 83.7 MiB since previous check. Training has not started.
+ Downloaded nvidia-cusparse
+Downloading jax-cuda13-pjrt (128.7MiB)
+ Downloaded nvidia-nvshmem-cu13
+Downloading jaxlib (82.8MiB)
+ Downloaded nvidia-cufft
+Downloading nvidia-nvvm (71.7MiB)
+[01:55:27] Setup active: dependency cache 3143.3 MiB; change 89.9 MiB since previous check. Training has not started.
+[01:55:57] Setup active: dependency cache 3149.3 MiB; change 6.0 MiB since previous check. Training has not started.
+[01:56:27] Setup active: dependency cache 3151.3 MiB; change 2.0 MiB since previous check. Training has not started.
+[01:56:57] Setup active: dependency cache 3155.2 MiB; change 4.0 MiB since previous check. Training has not started.
+[01:57:27] Setup active: dependency cache 3158.2 MiB; change 3.0 MiB since previous check. Training has not started.
+[01:57:57] Setup active: dependency cache 3162.2 MiB; change 4.0 MiB since previous check. Training has not started.
+[01:58:27] Setup active: dependency cache 3169.2 MiB; change 7.0 MiB since previous check. Training has not started.
+[01:58:57] Setup active: dependency cache 3220.8 MiB; change 51.7 MiB since previous check. Training has not started.
+[01:59:27] Setup active: dependency cache 3326.8 MiB; change 106.0 MiB since previous check. Training has not started.
+[01:59:57] Setup active: dependency cache 3425.1 MiB; change 98.3 MiB since previous check. Training has not started.
+[02:00:27] Setup active: dependency cache 3495.9 MiB; change 70.9 MiB since previous check. Training has not started.
+ Downloaded nvidia-nvvm
+Downloading nvidia-cuda-nvcc (44.8MiB)
+ Downloaded jaxlib
+Downloading nvidia-nvjitlink (44.5MiB)
+[02:00:57] Setup active: dependency cache 3974.2 MiB; change 478.3 MiB since previous check. Training has not started.
+ Downloaded nvidia-cuda-nvcc
+Downloading numpy (16.0MiB)
+ Downloaded jax-cuda13-pjrt
+Downloading nvidia-cuda-cupti (12.0MiB)
+ Downloaded numpy
+ Downloaded nvidia-nvjitlink
+Downloading matplotlib (9.4MiB)
+Downloading pillow (6.8MiB)
+ Downloaded nvidia-cuda-cupti
+Downloading fonttools (5.2MiB)
+[02:01:27] Setup active: dependency cache 4400.1 MiB; change 425.9 MiB since previous check. Training has not started.
+ Downloaded pillow
+ Downloaded matplotlib
+Downloading nvidia-cuda-cccl (3.9MiB)
+Downloading jax (3.3MiB)
+ Downloaded fonttools
+ Downloaded nvidia-cuda-cccl
+Downloading nvidia-cuda-runtime (2.4MiB)
+ Downloaded jax
+Downloading kiwisolver (1.4MiB)
+Downloading pygments (1.2MiB)
+ Downloaded kiwisolver
+ Downloaded nvidia-cuda-runtime
+ Downloaded pygments
+Prepared 35 packages in 24m 21s
+Installed 39 packages in 127ms
+ + absl-py==2.5.1
+ + contourpy==1.4.0
+ + cycler==0.12.1
+ + fonttools==4.68.0
+ + iniconfig==2.3.1
+ + jax==0.12.0.1
+ + jax-cuda13-pjrt==0.12.0.1
+ + jax-cuda13-plugin==0.12.0.1
+ + jaxlib==0.12.0.1
+ + kiwisolver==1.5.1
+ + matplotlib==3.11.2
+ + ml-dtypes==0.6.0
+ + numpy==2.5.4
+ + nvidia-cublas==13.10.0.20
+ + nvidia-cuda-cccl==13.3.5.0.6
+ + nvidia-cuda-crt==13.5.37
+ + nvidia-cuda-cupti==13.5.25
+ + nvidia-cuda-nvcc==13.5.37
+ + nvidia-cuda-nvrtc==13.5.37
+ + nvidia-cuda-runtime==13.5.37
+ + nvidia-cudnn-cu13==9.28.1.4
+ + nvidia-cufft==12.5.0.14
+ + nvidia-cusolver==12.4.1.2
+ + nvidia-cusparse==12.9.4.2
+ + nvidia-nccl-cu13==2.32.3
+ + nvidia-nvjitlink==13.5.37
+ + nvidia-nvshmem-cu13==3.8.0
+ + nvidia-nvvm==13.5.37
+ + opt-einsum==3.4.0
+ + optax==0.2.8
+ + packaging==26.3
+ + pillow==13.0.0
+ + pluggy==1.7.0
+ + pygments==2.21.0
+ + pyparsing==3.3.3
+ + pytest==9.2.0
+ + python-dateutil==4.0.0
+ + scipy==1.18.1
+ + tzdata==2026.6
+Using Python 3.12.16 environment at: /home/abdulrafay/.local/share/ches-enhance-benchmark/venv
+[2026-11-11T02:01:42+05:00] Setup complete
+[02:01:42] Checking masked SAC gradients, checkpoint loading, and actor/critic learning on the GPU.
+..                                                                       [100%]
+2 passed in 14.81s
+[02:02:00] Python 3.12.16; JAX 0.12.0.1; Optax 0.2.8; devices: [CudaDevice(id=0)]
+[02:02:01] Compiled GPU check passed in 1.75s
+[02:02:01] Generating 64 train / 4 validation / 8 test traces, 400 slots each
+[02:02:04] Starting LRU/tight/seed 0, 10 episodes; default width=64, history=8, batch=128
+[02:02:05] Rollout val_0000: 2584 tasks
+[02:02:05]   val_0000: 500/2584 tasks; rollout elapsed 0.2s
+[02:02:05]   val_0000: 1000/2584 tasks; rollout elapsed 0.4s
+[02:02:06]   val_0000: 1500/2584 tasks; rollout elapsed 0.6s
+[02:02:06]   val_0000: 2000/2584 tasks; rollout elapsed 0.8s
+[02:02:06]   val_0000: 2500/2584 tasks; rollout elapsed 1.0s
+[02:02:06]   val_0000: 2584/2584 tasks; rollout elapsed 1.0s
+[02:02:06] Rollout val_0001: 2611 tasks
+[02:02:06]   val_0001: 500/2611 tasks; rollout elapsed 0.2s
+[02:02:07]   val_0001: 1000/2611 tasks; rollout elapsed 0.4s
+[02:02:07]   val_0001: 1500/2611 tasks; rollout elapsed 0.6s
+[02:02:07]   val_0001: 2000/2611 tasks; rollout elapsed 0.8s
+[02:02:07]   val_0001: 2500/2611 tasks; rollout elapsed 1.0s
+[02:02:07]   val_0001: 2611/2611 tasks; rollout elapsed 1.0s
+[02:02:07] Rollout val_0002: 2563 tasks
+[02:02:07]   val_0002: 500/2563 tasks; rollout elapsed 0.2s
+[02:02:08]   val_0002: 1000/2563 tasks; rollout elapsed 0.4s
+[02:02:08]   val_0002: 1500/2563 tasks; rollout elapsed 0.6s
+[02:02:08]   val_0002: 2000/2563 tasks; rollout elapsed 0.8s
+[02:02:08]   val_0002: 2500/2563 tasks; rollout elapsed 1.0s
+[02:02:08]   val_0002: 2563/2563 tasks; rollout elapsed 1.0s
+[02:02:08] Rollout val_0003: 2466 tasks
+[02:02:08]   val_0003: 500/2466 tasks; rollout elapsed 0.2s
+[02:02:09]   val_0003: 1000/2466 tasks; rollout elapsed 0.4s
+[02:02:09]   val_0003: 1500/2466 tasks; rollout elapsed 0.6s
+[02:02:09]   val_0003: 2000/2466 tasks; rollout elapsed 0.8s
+[02:02:09]   val_0003: 2466/2466 tasks; rollout elapsed 1.0s
+[02:02:11] Rollout train_0000: 2424 tasks
+[02:02:11]   train_0000: 500/2424 tasks; rollout elapsed 0.2s
+[02:02:11]   train_0000: 1000/2424 tasks; rollout elapsed 0.5s
+[02:02:11]   train_0000: 1500/2424 tasks; rollout elapsed 0.7s
+[02:02:12]   train_0000: 2000/2424 tasks; rollout elapsed 1.0s
+[02:02:12]   train_0000: 2424/2424 tasks; rollout elapsed 1.2s
+[02:02:12] Rollout train_0001: 2523 tasks
+[02:02:12]   train_0001: 500/2523 tasks; rollout elapsed 0.3s
+[02:02:12]   train_0001: 1000/2523 tasks; rollout elapsed 0.5s
+[02:02:13]   train_0001: 1500/2523 tasks; rollout elapsed 0.7s
+[02:02:13]   train_0001: 2000/2523 tasks; rollout elapsed 1.0s
+[02:02:13]   train_0001: 2500/2523 tasks; rollout elapsed 1.2s
+[02:02:13]   train_0001: 2523/2523 tasks; rollout elapsed 1.3s
+[02:02:13] Compiling first learning update; this first call can take longer
+[02:02:18] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 58, 432, 8151, 29.71
+[02:02:24] Behavior-cloning warm start: 20/100 updates
+[02:02:25] Behavior-cloning warm start: 40/100 updates
+[02:02:25] Behavior-cloning warm start: 60/100 updates
+[02:02:26] Behavior-cloning warm start: 80/100 updates
+[02:02:27] Behavior-cloning warm start: 100/100 updates
+[02:02:29] Rollout val_0000: 2584 tasks
+[02:02:30]   val_0000: 500/2584 tasks; rollout elapsed 1.5s
+[02:02:32]   val_0000: 1000/2584 tasks; rollout elapsed 3.0s
+[02:02:33]   val_0000: 1500/2584 tasks; rollout elapsed 4.5s
+[02:02:35]   val_0000: 2000/2584 tasks; rollout elapsed 6.0s
+[02:02:36]   val_0000: 2500/2584 tasks; rollout elapsed 7.4s
+[02:02:36]   val_0000: 2584/2584 tasks; rollout elapsed 7.7s
+[02:02:36] Rollout val_0001: 2611 tasks
+[02:02:38]   val_0001: 500/2611 tasks; rollout elapsed 1.5s
+[02:02:38] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 8, 438, 8151, 17.70
+[02:02:39]   val_0001: 1000/2611 tasks; rollout elapsed 2.9s
+[02:02:41]   val_0001: 1500/2611 tasks; rollout elapsed 4.6s
+[02:02:43]   val_0001: 2000/2611 tasks; rollout elapsed 6.2s
+[02:02:44]   val_0001: 2500/2611 tasks; rollout elapsed 7.6s
+[02:02:44]   val_0001: 2611/2611 tasks; rollout elapsed 8.0s
+[02:02:44] Rollout val_0002: 2563 tasks
+[02:02:46]   val_0002: 500/2563 tasks; rollout elapsed 1.5s
+[02:02:47]   val_0002: 1000/2563 tasks; rollout elapsed 3.1s
+[02:02:49]   val_0002: 1500/2563 tasks; rollout elapsed 4.6s
+[02:02:50]   val_0002: 2000/2563 tasks; rollout elapsed 6.1s
+[02:02:52]   val_0002: 2500/2563 tasks; rollout elapsed 7.7s
+[02:02:52]   val_0002: 2563/2563 tasks; rollout elapsed 7.9s
+[02:02:52] Rollout val_0003: 2466 tasks
+[02:02:54]   val_0003: 500/2466 tasks; rollout elapsed 2.1s
+[02:02:56]   val_0003: 1000/2466 tasks; rollout elapsed 3.8s
+[02:02:58]   val_0003: 1500/2466 tasks; rollout elapsed 5.4s
+[02:02:58] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 8, 438, 8151, 16.99
+[02:02:59]   val_0003: 2000/2466 tasks; rollout elapsed 7.0s
+[02:03:01]   val_0003: 2466/2466 tasks; rollout elapsed 8.5s
+LRU_tight_s0 episode=0/10 validation latency=24.85s on-time=73.0% hit=23.4% reward=0.204 updates=0
+[02:03:01] Rollout train_0019: 2536 tasks
+[02:03:02]   train_0019: 500/2536 tasks; rollout elapsed 1.6s
+[02:03:04]   train_0019: 1000/2536 tasks; rollout elapsed 3.3s
+[02:03:06]   train_0019: 1500/2536 tasks; rollout elapsed 4.9s
+[02:03:07]   train_0019: 2000/2536 tasks; rollout elapsed 6.6s
+[02:03:09]   train_0019: 2500/2536 tasks; rollout elapsed 8.3s
+[02:03:09]   train_0019: 2536/2536 tasks; rollout elapsed 8.4s
+[02:03:18] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 0, 438, 8151, 26.97
+[02:03:27] SAC updates: 100; critic loss=0.1048
+[02:03:32] SAC updates: 200; critic loss=0.1230
+[02:03:37] SAC updates: 300; critic loss=0.0924
+[02:03:38] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 19, 440, 8151, 15.67
+[02:03:42] SAC updates: 400; critic loss=0.0661
+[02:03:46] SAC updates: 500; critic loss=0.0393
+[02:03:51] SAC updates: 600; critic loss=0.0821
+[02:03:53] EPISODE 1/10 DONE: latency=32.97s, on-time=63.4%, hit=12.7%, updates=634; training elapsed=108.3s
+[02:03:53] Rollout train_0007: 2580 tasks
+[02:03:54]   train_0007: 500/2580 tasks; rollout elapsed 1.7s
+[02:03:56]   train_0007: 1000/2580 tasks; rollout elapsed 3.4s
+[02:03:58]   train_0007: 1500/2580 tasks; rollout elapsed 5.1s
+[02:03:59] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 6, 442, 8151, 16.31
+[02:03:59]   train_0007: 2000/2580 tasks; rollout elapsed 6.8s
+[02:04:01]   train_0007: 2500/2580 tasks; rollout elapsed 8.6s
+[02:04:01]   train_0007: 2580/2580 tasks; rollout elapsed 8.8s
+[02:04:05] SAC updates: 700; critic loss=0.1246
+[02:04:09] SAC updates: 800; critic loss=0.1063
+[02:04:14] SAC updates: 900; critic loss=0.1598
+[02:04:19] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 22, 442, 8151, 16.11
+[02:04:19] SAC updates: 1000; critic loss=0.2339
+[02:04:23] SAC updates: 1100; critic loss=0.1919
+[02:04:28] SAC updates: 1200; critic loss=0.1443
+[02:04:32] EPISODE 2/10 DONE: latency=17.99s, on-time=83.1%, hit=42.2%, updates=1279; training elapsed=147.2s
+[02:04:32] Rollout train_0035: 2529 tasks
+[02:04:33]   train_0035: 500/2529 tasks; rollout elapsed 1.6s
+[02:04:35]   train_0035: 1000/2529 tasks; rollout elapsed 3.3s
+[02:04:36]   train_0035: 1500/2529 tasks; rollout elapsed 4.9s
+[02:04:38]   train_0035: 2000/2529 tasks; rollout elapsed 6.6s
+[02:04:39] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 7, 442, 8151, 16.84
+[02:04:40]   train_0035: 2500/2529 tasks; rollout elapsed 8.2s
+[02:04:40]   train_0035: 2529/2529 tasks; rollout elapsed 8.3s
+[02:04:41] SAC updates: 1300; critic loss=0.1615
+[02:04:46] SAC updates: 1400; critic loss=0.0957
+[02:04:50] SAC updates: 1500; critic loss=0.0967
+[02:04:55] SAC updates: 1600; critic loss=0.1895
+[02:04:59] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 17, 442, 8151, 16.12
+[02:05:00] SAC updates: 1700; critic loss=0.0798
+[02:05:04] SAC updates: 1800; critic loss=0.2581
+[02:05:09] SAC updates: 1900; critic loss=0.0885
+[02:05:09] EPISODE 3/10 DONE: latency=11.28s, on-time=93.1%, hit=53.3%, updates=1911; training elapsed=184.9s
+[02:05:09] Rollout train_0015: 2504 tasks
+[02:05:11]   train_0015: 500/2504 tasks; rollout elapsed 1.9s
+[02:05:13]   train_0015: 1000/2504 tasks; rollout elapsed 3.7s
+[02:05:15]   train_0015: 1500/2504 tasks; rollout elapsed 5.4s
+[02:05:16]   train_0015: 2000/2504 tasks; rollout elapsed 7.1s
+[02:05:18]   train_0015: 2500/2504 tasks; rollout elapsed 8.7s
+[02:05:18]   train_0015: 2504/2504 tasks; rollout elapsed 8.7s
+[02:05:19] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 17, 442, 8151, 18.26
+[02:05:22] SAC updates: 2000; critic loss=0.1761
+[02:05:27] SAC updates: 2100; critic loss=0.0894
+[02:05:31] SAC updates: 2200; critic loss=0.1542
+[02:05:36] SAC updates: 2300; critic loss=0.0833
+[02:05:39] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 14, 442, 8151, 15.04
+[02:05:41] SAC updates: 2400; critic loss=0.2196
+[02:05:45] SAC updates: 2500; critic loss=0.1727
+[02:05:47] EPISODE 4/10 DONE: latency=11.28s, on-time=94.1%, hit=51.8%, updates=2537; training elapsed=222.9s
+[02:05:47] Rollout train_0026: 2645 tasks
+[02:05:49]   train_0026: 500/2645 tasks; rollout elapsed 1.8s
+[02:05:51]   train_0026: 1000/2645 tasks; rollout elapsed 3.4s
+[02:05:52]   train_0026: 1500/2645 tasks; rollout elapsed 5.0s
+[02:05:54]   train_0026: 2000/2645 tasks; rollout elapsed 6.6s
+[02:05:56]   train_0026: 2500/2645 tasks; rollout elapsed 8.3s
+[02:05:56]   train_0026: 2645/2645 tasks; rollout elapsed 8.7s
+[02:05:59] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 17, 442, 8151, 15.74
+[02:05:59] SAC updates: 2600; critic loss=0.1230
+[02:06:04] SAC updates: 2700; critic loss=0.0990
+[02:06:08] SAC updates: 2800; critic loss=0.2872
+[02:06:13] SAC updates: 2900; critic loss=0.1233
+[02:06:18] SAC updates: 3000; critic loss=0.1874
+[02:06:19] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 18, 442, 8151, 15.02
+[02:06:22] SAC updates: 3100; critic loss=0.0887
+[02:06:27] EPISODE 5/10 DONE: latency=11.73s, on-time=93.2%, hit=52.4%, updates=3198; training elapsed=262.3s
+[02:06:27] Rollout val_0000: 2584 tasks
+[02:06:29]   val_0000: 500/2584 tasks; rollout elapsed 1.9s
+[02:06:30]   val_0000: 1000/2584 tasks; rollout elapsed 3.7s
+[02:06:32]   val_0000: 1500/2584 tasks; rollout elapsed 5.5s
+[02:06:34]   val_0000: 2000/2584 tasks; rollout elapsed 7.4s
+[02:06:36]   val_0000: 2500/2584 tasks; rollout elapsed 8.9s
+[02:06:36]   val_0000: 2584/2584 tasks; rollout elapsed 9.1s
+[02:06:36] Rollout val_0001: 2611 tasks
+[02:06:37]   val_0001: 500/2611 tasks; rollout elapsed 1.5s
+[02:06:39]   val_0001: 1000/2611 tasks; rollout elapsed 3.0s
+[02:06:39] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 8, 442, 8151, 17.26
+[02:06:40]   val_0001: 1500/2611 tasks; rollout elapsed 4.5s
+[02:06:42]   val_0001: 2000/2611 tasks; rollout elapsed 6.0s
+[02:06:43]   val_0001: 2500/2611 tasks; rollout elapsed 7.6s
+[02:06:44]   val_0001: 2611/2611 tasks; rollout elapsed 7.9s
+[02:06:44] Rollout val_0002: 2563 tasks
+[02:06:45]   val_0002: 500/2563 tasks; rollout elapsed 1.5s
+[02:06:47]   val_0002: 1000/2563 tasks; rollout elapsed 3.1s
+[02:06:48]   val_0002: 1500/2563 tasks; rollout elapsed 4.6s
+[02:06:50]   val_0002: 2000/2563 tasks; rollout elapsed 6.1s
+[02:06:51]   val_0002: 2500/2563 tasks; rollout elapsed 7.6s
+[02:06:52]   val_0002: 2563/2563 tasks; rollout elapsed 7.8s
+[02:06:52] Rollout val_0003: 2466 tasks
+[02:06:53]   val_0003: 500/2466 tasks; rollout elapsed 1.5s
+[02:06:55]   val_0003: 1000/2466 tasks; rollout elapsed 3.0s
+[02:06:56]   val_0003: 1500/2466 tasks; rollout elapsed 4.5s
+[02:06:58]   val_0003: 2000/2466 tasks; rollout elapsed 6.1s
+[02:06:59] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 7, 442, 8151, 17.52
+[02:06:59]   val_0003: 2466/2466 tasks; rollout elapsed 7.5s
+LRU_tight_s0 episode=5/10 validation latency=11.07s on-time=93.1% hit=54.5% reward=0.480 updates=3198
+[02:06:59] Rollout train_0022: 2523 tasks
+[02:07:01]   train_0022: 500/2523 tasks; rollout elapsed 1.6s
+[02:07:02]   train_0022: 1000/2523 tasks; rollout elapsed 3.2s
+[02:07:04]   train_0022: 1500/2523 tasks; rollout elapsed 4.8s
+[02:07:05]   train_0022: 2000/2523 tasks; rollout elapsed 6.3s
+[02:07:07]   train_0022: 2500/2523 tasks; rollout elapsed 7.8s
+[02:07:07]   train_0022: 2523/2523 tasks; rollout elapsed 7.9s
+[02:07:07] SAC updates: 3200; critic loss=0.2213
+[02:07:12] SAC updates: 3300; critic loss=0.1336
+[02:07:17] SAC updates: 3400; critic loss=0.5128
+[02:07:19] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 17, 442, 8151, 15.21
+[02:07:21] SAC updates: 3500; critic loss=0.0879
+[02:07:26] SAC updates: 3600; critic loss=0.1271
+[02:07:31] SAC updates: 3700; critic loss=0.2262
+[02:07:35] SAC updates: 3800; critic loss=0.0920
+[02:07:37] EPISODE 6/10 DONE: latency=10.33s, on-time=94.9%, hit=54.1%, updates=3828; training elapsed=332.4s
+[02:07:37] Rollout train_0061: 2478 tasks
+[02:07:39]   train_0061: 500/2478 tasks; rollout elapsed 2.0s
+[02:07:39] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 5, 442, 8151, 16.52
+[02:07:40]   train_0061: 1000/2478 tasks; rollout elapsed 3.7s
+[02:07:42]   train_0061: 1500/2478 tasks; rollout elapsed 5.4s
+[02:07:44]   train_0061: 2000/2478 tasks; rollout elapsed 7.1s
+[02:07:45]   train_0061: 2478/2478 tasks; rollout elapsed 8.7s
+[02:07:49] SAC updates: 3900; critic loss=0.1563
+[02:07:54] SAC updates: 4000; critic loss=0.4334
+[02:07:58] SAC updates: 4100; critic loss=0.0910
+[02:07:59] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 22, 442, 8151, 16.88
+[02:08:03] SAC updates: 4200; critic loss=0.1162
+[02:08:08] SAC updates: 4300; critic loss=0.1077
+[02:08:12] SAC updates: 4400; critic loss=0.1026
+[02:08:15] EPISODE 7/10 DONE: latency=11.82s, on-time=92.8%, hit=50.4%, updates=4447; training elapsed=370.3s
+[02:08:15] Rollout train_0021: 2579 tasks
+[02:08:16]   train_0021: 500/2579 tasks; rollout elapsed 1.8s
+[02:08:18]   train_0021: 1000/2579 tasks; rollout elapsed 3.4s
+[02:08:19] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 7, 442, 8151, 16.80
+[02:08:20]   train_0021: 1500/2579 tasks; rollout elapsed 5.2s
+[02:08:22]   train_0021: 2000/2579 tasks; rollout elapsed 6.9s
+[02:08:23]   train_0021: 2500/2579 tasks; rollout elapsed 8.6s
+[02:08:24]   train_0021: 2579/2579 tasks; rollout elapsed 8.9s
+[02:08:26] SAC updates: 4500; critic loss=0.0958
+[02:08:31] SAC updates: 4600; critic loss=0.0956
+[02:08:36] SAC updates: 4700; critic loss=0.1094
+[02:08:39] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 17, 442, 8151, 15.74
+[02:08:40] SAC updates: 4800; critic loss=0.1395
+[02:08:45] SAC updates: 4900; critic loss=0.1365
+[02:08:50] SAC updates: 5000; critic loss=0.1479
+[02:08:54] EPISODE 8/10 DONE: latency=10.34s, on-time=95.4%, hit=52.2%, updates=5091; training elapsed=409.7s
+[02:08:54] Rollout train_0003: 2500 tasks
+[02:08:56]   train_0003: 500/2500 tasks; rollout elapsed 1.7s
+[02:08:57]   train_0003: 1000/2500 tasks; rollout elapsed 3.3s
+[02:08:59]   train_0003: 1500/2500 tasks; rollout elapsed 5.0s
+[02:08:59] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 8, 442, 8151, 17.07
+[02:09:01]   train_0003: 2000/2500 tasks; rollout elapsed 6.5s
+[02:09:02]   train_0003: 2500/2500 tasks; rollout elapsed 8.2s
+[02:09:03] SAC updates: 5100; critic loss=0.1806
+[02:09:08] SAC updates: 5200; critic loss=0.1146
+[02:09:12] SAC updates: 5300; critic loss=0.1270
+[02:09:17] SAC updates: 5400; critic loss=0.1415
+[02:09:19] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 20, 442, 8151, 15.43
+[02:09:22] SAC updates: 5500; critic loss=0.1277
+[02:09:27] SAC updates: 5600; critic loss=0.3974
+[02:09:31] SAC updates: 5700; critic loss=0.2767
+[02:09:32] EPISODE 9/10 DONE: latency=10.81s, on-time=94.1%, hit=55.4%, updates=5716; training elapsed=447.7s
+[02:09:32] Rollout train_0057: 2467 tasks
+[02:09:34]   train_0057: 500/2467 tasks; rollout elapsed 1.8s
+[02:09:36]   train_0057: 1000/2467 tasks; rollout elapsed 3.5s
+[02:09:37]   train_0057: 1500/2467 tasks; rollout elapsed 5.2s
+[02:09:39]   train_0057: 2000/2467 tasks; rollout elapsed 6.8s
+[02:09:39] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 8, 442, 8151, 17.21
+[02:09:40]   train_0057: 2467/2467 tasks; rollout elapsed 8.3s
+[02:09:45] SAC updates: 5800; critic loss=0.3205
+[02:09:49] SAC updates: 5900; critic loss=0.1041
+[02:09:54] SAC updates: 6000; critic loss=0.1400
+[02:09:58] SAC updates: 6100; critic loss=0.1288
+[02:09:59] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 22, 442, 8151, 17.00
+[02:10:03] SAC updates: 6200; critic loss=0.1252
+[02:10:08] SAC updates: 6300; critic loss=0.1986
+[02:10:09] EPISODE 10/10 DONE: latency=11.02s, on-time=93.7%, hit=53.7%, updates=6332; training elapsed=484.9s
+[02:10:09] Rollout val_0000: 2584 tasks
+[02:10:11]   val_0000: 500/2584 tasks; rollout elapsed 1.7s
+[02:10:13]   val_0000: 1000/2584 tasks; rollout elapsed 3.4s
+[02:10:14]   val_0000: 1500/2584 tasks; rollout elapsed 5.0s
+[02:10:16]   val_0000: 2000/2584 tasks; rollout elapsed 6.6s
+[02:10:18]   val_0000: 2500/2584 tasks; rollout elapsed 8.3s
+[02:10:18]   val_0000: 2584/2584 tasks; rollout elapsed 8.6s
+[02:10:18] Rollout val_0001: 2611 tasks
+[02:10:19]   val_0001: 500/2611 tasks; rollout elapsed 1.6s
+[02:10:20] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 7, 442, 8151, 16.93
+[02:10:21]   val_0001: 1000/2611 tasks; rollout elapsed 3.2s
+[02:10:23]   val_0001: 1500/2611 tasks; rollout elapsed 4.9s
+[02:10:24]   val_0001: 2000/2611 tasks; rollout elapsed 6.6s
+[02:10:26]   val_0001: 2500/2611 tasks; rollout elapsed 8.2s
+[02:10:26]   val_0001: 2611/2611 tasks; rollout elapsed 8.5s
+[02:10:26] Rollout val_0002: 2563 tasks
+[02:10:28]   val_0002: 500/2563 tasks; rollout elapsed 1.6s
+[02:10:30]   val_0002: 1000/2563 tasks; rollout elapsed 3.2s
+[02:10:31]   val_0002: 1500/2563 tasks; rollout elapsed 4.7s
+[02:10:33]   val_0002: 2000/2563 tasks; rollout elapsed 6.3s
+[02:10:34]   val_0002: 2500/2563 tasks; rollout elapsed 7.9s
+[02:10:34]   val_0002: 2563/2563 tasks; rollout elapsed 8.1s
+[02:10:34] Rollout val_0003: 2466 tasks
+[02:10:36]   val_0003: 500/2466 tasks; rollout elapsed 1.5s
+[02:10:37]   val_0003: 1000/2466 tasks; rollout elapsed 3.0s
+[02:10:39]   val_0003: 1500/2466 tasks; rollout elapsed 4.6s
+[02:10:40] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 7, 442, 8151, 17.07
+[02:10:41]   val_0003: 2000/2466 tasks; rollout elapsed 6.1s
+[02:10:42]   val_0003: 2466/2466 tasks; rollout elapsed 7.5s
+LRU_tight_s0 episode=10/10 validation latency=10.65s on-time=93.9% hit=55.3% reward=0.488 updates=6332
+[02:10:42] TRAINING FINISHED: 517.8s (8.63 min), including warm start and validation
+[02:10:42] Evaluating best checkpoint and five heuristics on 8 test traces
+[02:10:43] Rollout test_0000: 2465 tasks
+[02:10:45]   test_0000: 500/2465 tasks; rollout elapsed 1.8s
+[02:10:46]   test_0000: 1000/2465 tasks; rollout elapsed 3.3s
+[02:10:48]   test_0000: 1500/2465 tasks; rollout elapsed 4.8s
+[02:10:49]   test_0000: 2000/2465 tasks; rollout elapsed 6.3s
+[02:10:51]   test_0000: 2465/2465 tasks; rollout elapsed 7.6s
+[02:10:51] Rollout test_0000: 2465 tasks
+[02:10:51]   test_0000: 500/2465 tasks; rollout elapsed 0.2s
+[02:10:51]   test_0000: 1000/2465 tasks; rollout elapsed 0.4s
+[02:10:51]   test_0000: 1500/2465 tasks; rollout elapsed 0.6s
+[02:10:51]   test_0000: 2000/2465 tasks; rollout elapsed 0.8s
+[02:10:51]   test_0000: 2465/2465 tasks; rollout elapsed 1.0s
+[02:10:52] Rollout test_0000: 2465 tasks
+[02:10:52]   test_0000: 500/2465 tasks; rollout elapsed 0.2s
+[02:10:52]   test_0000: 1000/2465 tasks; rollout elapsed 0.4s
+[02:10:52]   test_0000: 1500/2465 tasks; rollout elapsed 0.6s
+[02:10:52]   test_0000: 2000/2465 tasks; rollout elapsed 0.8s
+[02:10:52]   test_0000: 2465/2465 tasks; rollout elapsed 1.0s
+[02:10:53] Rollout test_0000: 2465 tasks
+[02:10:53]   test_0000: 500/2465 tasks; rollout elapsed 0.2s
+[02:10:53]   test_0000: 1000/2465 tasks; rollout elapsed 0.5s
+[02:10:53]   test_0000: 1500/2465 tasks; rollout elapsed 0.7s
+[02:10:53]   test_0000: 2000/2465 tasks; rollout elapsed 0.9s
+[02:10:54]   test_0000: 2465/2465 tasks; rollout elapsed 1.1s
+[02:10:54] Rollout test_0000: 2465 tasks
+[02:10:54]   test_0000: 500/2465 tasks; rollout elapsed 0.2s
+[02:10:54]   test_0000: 1000/2465 tasks; rollout elapsed 0.4s
+[02:10:54]   test_0000: 1500/2465 tasks; rollout elapsed 0.6s
+[02:10:54]   test_0000: 2000/2465 tasks; rollout elapsed 0.8s
+[02:10:55]   test_0000: 2465/2465 tasks; rollout elapsed 1.0s
+[02:10:55] Rollout test_0000: 2465 tasks
+[02:10:55]   test_0000: 500/2465 tasks; rollout elapsed 0.2s
+[02:10:55]   test_0000: 1000/2465 tasks; rollout elapsed 0.4s
+[02:10:55]   test_0000: 1500/2465 tasks; rollout elapsed 0.6s
+[02:10:56]   test_0000: 2000/2465 tasks; rollout elapsed 0.8s
+[02:10:56]   test_0000: 2465/2465 tasks; rollout elapsed 1.0s
+[02:10:56] Rollout test_0001: 2452 tasks
+[02:10:57]   test_0001: 500/2452 tasks; rollout elapsed 1.7s
+[02:10:59]   test_0001: 1000/2452 tasks; rollout elapsed 3.2s
+[02:11:00] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 7, 442, 8151, 17.25
+[02:11:01]   test_0001: 1500/2452 tasks; rollout elapsed 4.8s
+[02:11:02]   test_0001: 2000/2452 tasks; rollout elapsed 6.3s
+[02:11:03]   test_0001: 2452/2452 tasks; rollout elapsed 7.7s
+[02:11:03] Rollout test_0001: 2452 tasks
+[02:11:04]   test_0001: 500/2452 tasks; rollout elapsed 0.2s
+[02:11:04]   test_0001: 1000/2452 tasks; rollout elapsed 0.4s
+[02:11:04]   test_0001: 1500/2452 tasks; rollout elapsed 0.6s
+[02:11:04]   test_0001: 2000/2452 tasks; rollout elapsed 0.8s
+[02:11:04]   test_0001: 2452/2452 tasks; rollout elapsed 1.0s
+[02:11:04] Rollout test_0001: 2452 tasks
+[02:11:05]   test_0001: 500/2452 tasks; rollout elapsed 0.2s
+[02:11:05]   test_0001: 1000/2452 tasks; rollout elapsed 0.4s
+[02:11:05]   test_0001: 1500/2452 tasks; rollout elapsed 0.6s
+[02:11:05]   test_0001: 2000/2452 tasks; rollout elapsed 0.8s
+[02:11:05]   test_0001: 2452/2452 tasks; rollout elapsed 1.0s
+[02:11:05] Rollout test_0001: 2452 tasks
+[02:11:06]   test_0001: 500/2452 tasks; rollout elapsed 0.2s
+[02:11:06]   test_0001: 1000/2452 tasks; rollout elapsed 0.4s
+[02:11:06]   test_0001: 1500/2452 tasks; rollout elapsed 0.6s
+[02:11:06]   test_0001: 2000/2452 tasks; rollout elapsed 0.8s
+[02:11:06]   test_0001: 2452/2452 tasks; rollout elapsed 1.0s
+[02:11:06] Rollout test_0001: 2452 tasks
+[02:11:07]   test_0001: 500/2452 tasks; rollout elapsed 0.2s
+[02:11:07]   test_0001: 1000/2452 tasks; rollout elapsed 0.4s
+[02:11:07]   test_0001: 1500/2452 tasks; rollout elapsed 0.6s
+[02:11:07]   test_0001: 2000/2452 tasks; rollout elapsed 0.9s
+[02:11:07]   test_0001: 2452/2452 tasks; rollout elapsed 1.0s
+[02:11:07] Rollout test_0001: 2452 tasks
+[02:11:08]   test_0001: 500/2452 tasks; rollout elapsed 0.2s
+[02:11:08]   test_0001: 1000/2452 tasks; rollout elapsed 0.4s
+[02:11:08]   test_0001: 1500/2452 tasks; rollout elapsed 0.6s
+[02:11:08]   test_0001: 2000/2452 tasks; rollout elapsed 0.8s
+[02:11:09]   test_0001: 2452/2452 tasks; rollout elapsed 1.0s
+[02:11:09] Rollout test_0002: 2387 tasks
+[02:11:10]   test_0002: 500/2387 tasks; rollout elapsed 1.6s
+[02:11:12]   test_0002: 1000/2387 tasks; rollout elapsed 3.1s
+[02:11:13]   test_0002: 1500/2387 tasks; rollout elapsed 4.7s
+[02:11:15]   test_0002: 2000/2387 tasks; rollout elapsed 6.3s
+[02:11:16]   test_0002: 2387/2387 tasks; rollout elapsed 7.5s
+[02:11:16] Rollout test_0002: 2387 tasks
+[02:11:16]   test_0002: 500/2387 tasks; rollout elapsed 0.2s
+[02:11:16]   test_0002: 1000/2387 tasks; rollout elapsed 0.4s
+[02:11:17]   test_0002: 1500/2387 tasks; rollout elapsed 0.6s
+[02:11:17]   test_0002: 2000/2387 tasks; rollout elapsed 0.8s
+[02:11:17]   test_0002: 2387/2387 tasks; rollout elapsed 0.9s
+[02:11:17] Rollout test_0002: 2387 tasks
+[02:11:17]   test_0002: 500/2387 tasks; rollout elapsed 0.2s
+[02:11:17]   test_0002: 1000/2387 tasks; rollout elapsed 0.4s
+[02:11:18]   test_0002: 1500/2387 tasks; rollout elapsed 0.6s
+[02:11:18]   test_0002: 2000/2387 tasks; rollout elapsed 0.8s
+[02:11:18]   test_0002: 2387/2387 tasks; rollout elapsed 0.9s
+[02:11:18] Rollout test_0002: 2387 tasks
+[02:11:18]   test_0002: 500/2387 tasks; rollout elapsed 0.2s
+[02:11:18]   test_0002: 1000/2387 tasks; rollout elapsed 0.4s
+[02:11:18]   test_0002: 1500/2387 tasks; rollout elapsed 0.6s
+[02:11:19]   test_0002: 2000/2387 tasks; rollout elapsed 0.8s
+[02:11:19]   test_0002: 2387/2387 tasks; rollout elapsed 1.0s
+[02:11:19] Rollout test_0002: 2387 tasks
+[02:11:19]   test_0002: 500/2387 tasks; rollout elapsed 0.2s
+[02:11:19]   test_0002: 1000/2387 tasks; rollout elapsed 0.4s
+[02:11:19]   test_0002: 1500/2387 tasks; rollout elapsed 0.6s
+[02:11:20]   test_0002: 2000/2387 tasks; rollout elapsed 0.8s
+[02:11:20]   test_0002: 2387/2387 tasks; rollout elapsed 1.0s
+[02:11:20] Rollout test_0002: 2387 tasks
+[02:11:20]   test_0002: 500/2387 tasks; rollout elapsed 0.3s[02:11:20] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 0, 442, 8151, 6.13
+
+[02:11:20]   test_0002: 1000/2387 tasks; rollout elapsed 0.5s
+[02:11:21]   test_0002: 1500/2387 tasks; rollout elapsed 0.8s
+[02:11:21]   test_0002: 2000/2387 tasks; rollout elapsed 1.0s
+[02:11:21]   test_0002: 2387/2387 tasks; rollout elapsed 1.1s
+[02:11:21] Rollout test_0003: 2482 tasks
+[02:11:23]   test_0003: 500/2482 tasks; rollout elapsed 1.9s
+[02:11:25]   test_0003: 1000/2482 tasks; rollout elapsed 3.8s
+[02:11:27]   test_0003: 1500/2482 tasks; rollout elapsed 5.7s
+[02:11:28]   test_0003: 2000/2482 tasks; rollout elapsed 7.4s
+[02:11:30]   test_0003: 2482/2482 tasks; rollout elapsed 8.9s
+[02:11:30] Rollout test_0003: 2482 tasks
+[02:11:30]   test_0003: 500/2482 tasks; rollout elapsed 0.2s
+[02:11:30]   test_0003: 1000/2482 tasks; rollout elapsed 0.4s
+[02:11:31]   test_0003: 1500/2482 tasks; rollout elapsed 0.6s
+[02:11:31]   test_0003: 2000/2482 tasks; rollout elapsed 0.8s
+[02:11:31]   test_0003: 2482/2482 tasks; rollout elapsed 1.0s
+[02:11:31] Rollout test_0003: 2482 tasks
+[02:11:31]   test_0003: 500/2482 tasks; rollout elapsed 0.2s
+[02:11:31]   test_0003: 1000/2482 tasks; rollout elapsed 0.4s
+[02:11:32]   test_0003: 1500/2482 tasks; rollout elapsed 0.6s
+[02:11:32]   test_0003: 2000/2482 tasks; rollout elapsed 0.8s
+[02:11:32]   test_0003: 2482/2482 tasks; rollout elapsed 1.0s
+[02:11:32] Rollout test_0003: 2482 tasks
+[02:11:32]   test_0003: 500/2482 tasks; rollout elapsed 0.2s
+[02:11:32]   test_0003: 1000/2482 tasks; rollout elapsed 0.4s
+[02:11:33]   test_0003: 1500/2482 tasks; rollout elapsed 0.6s
+[02:11:33]   test_0003: 2000/2482 tasks; rollout elapsed 0.8s
+[02:11:33]   test_0003: 2482/2482 tasks; rollout elapsed 1.0s
+[02:11:33] Rollout test_0003: 2482 tasks
+[02:11:33]   test_0003: 500/2482 tasks; rollout elapsed 0.2s
+[02:11:33]   test_0003: 1000/2482 tasks; rollout elapsed 0.5s
+[02:11:34]   test_0003: 1500/2482 tasks; rollout elapsed 0.7s
+[02:11:34]   test_0003: 2000/2482 tasks; rollout elapsed 0.9s
+[02:11:34]   test_0003: 2482/2482 tasks; rollout elapsed 1.1s
+[02:11:34] Rollout test_0003: 2482 tasks
+[02:11:34]   test_0003: 500/2482 tasks; rollout elapsed 0.2s
+[02:11:34]   test_0003: 1000/2482 tasks; rollout elapsed 0.4s
+[02:11:35]   test_0003: 1500/2482 tasks; rollout elapsed 0.6s
+[02:11:35]   test_0003: 2000/2482 tasks; rollout elapsed 0.8s
+[02:11:35]   test_0003: 2482/2482 tasks; rollout elapsed 1.0s
+[02:11:35] Rollout test_0004: 2454 tasks
+[02:11:37]   test_0004: 500/2454 tasks; rollout elapsed 1.6s
+[02:11:38]   test_0004: 1000/2454 tasks; rollout elapsed 3.2s
+[02:11:40]   test_0004: 1500/2454 tasks; rollout elapsed 4.9s
+[02:11:41] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 7, 442, 8151, 16.73
+[02:11:42]   test_0004: 2000/2454 tasks; rollout elapsed 6.5s
+[02:11:43]   test_0004: 2454/2454 tasks; rollout elapsed 8.0s
+[02:11:43] Rollout test_0004: 2454 tasks
+[02:11:43]   test_0004: 500/2454 tasks; rollout elapsed 0.2s
+[02:11:43]   test_0004: 1000/2454 tasks; rollout elapsed 0.4s
+[02:11:44]   test_0004: 1500/2454 tasks; rollout elapsed 0.6s
+[02:11:44]   test_0004: 2000/2454 tasks; rollout elapsed 0.8s
+[02:11:44]   test_0004: 2454/2454 tasks; rollout elapsed 1.0s
+[02:11:44] Rollout test_0004: 2454 tasks
+[02:11:44]   test_0004: 500/2454 tasks; rollout elapsed 0.2s
+[02:11:44]   test_0004: 1000/2454 tasks; rollout elapsed 0.4s
+[02:11:45]   test_0004: 1500/2454 tasks; rollout elapsed 0.6s
+[02:11:45]   test_0004: 2000/2454 tasks; rollout elapsed 0.8s
+[02:11:45]   test_0004: 2454/2454 tasks; rollout elapsed 1.0s
+[02:11:45] Rollout test_0004: 2454 tasks
+[02:11:45]   test_0004: 500/2454 tasks; rollout elapsed 0.2s
+[02:11:45]   test_0004: 1000/2454 tasks; rollout elapsed 0.4s
+[02:11:46]   test_0004: 1500/2454 tasks; rollout elapsed 0.6s
+[02:11:46]   test_0004: 2000/2454 tasks; rollout elapsed 0.8s
+[02:11:46]   test_0004: 2454/2454 tasks; rollout elapsed 1.0s
+[02:11:46] Rollout test_0004: 2454 tasks
+[02:11:46]   test_0004: 500/2454 tasks; rollout elapsed 0.2s
+[02:11:46]   test_0004: 1000/2454 tasks; rollout elapsed 0.4s
+[02:11:47]   test_0004: 1500/2454 tasks; rollout elapsed 0.6s
+[02:11:47]   test_0004: 2000/2454 tasks; rollout elapsed 0.8s
+[02:11:47]   test_0004: 2454/2454 tasks; rollout elapsed 1.0s
+[02:11:47] Rollout test_0004: 2454 tasks
+[02:11:47]   test_0004: 500/2454 tasks; rollout elapsed 0.2s
+[02:11:47]   test_0004: 1000/2454 tasks; rollout elapsed 0.4s
+[02:11:48]   test_0004: 1500/2454 tasks; rollout elapsed 0.6s
+[02:11:48]   test_0004: 2000/2454 tasks; rollout elapsed 0.8s
+[02:11:48]   test_0004: 2454/2454 tasks; rollout elapsed 1.0s
+[02:11:48] Rollout test_0005: 2429 tasks
+[02:11:50]   test_0005: 500/2429 tasks; rollout elapsed 1.6s
+[02:11:51]   test_0005: 1000/2429 tasks; rollout elapsed 3.2s
+[02:11:53]   test_0005: 1500/2429 tasks; rollout elapsed 4.8s
+[02:11:54]   test_0005: 2000/2429 tasks; rollout elapsed 6.3s
+[02:11:56]   test_0005: 2429/2429 tasks; rollout elapsed 7.7s
+[02:11:56] Rollout test_0005: 2429 tasks
+[02:11:56]   test_0005: 500/2429 tasks; rollout elapsed 0.2s
+[02:11:56]   test_0005: 1000/2429 tasks; rollout elapsed 0.4s
+[02:11:56]   test_0005: 1500/2429 tasks; rollout elapsed 0.6s
+[02:11:56]   test_0005: 2000/2429 tasks; rollout elapsed 0.8s
+[02:11:57]   test_0005: 2429/2429 tasks; rollout elapsed 1.0s
+[02:11:57] Rollout test_0005: 2429 tasks
+[02:11:57]   test_0005: 500/2429 tasks; rollout elapsed 0.2s
+[02:11:57]   test_0005: 1000/2429 tasks; rollout elapsed 0.4s
+[02:11:57]   test_0005: 1500/2429 tasks; rollout elapsed 0.6s
+[02:11:57]   test_0005: 2000/2429 tasks; rollout elapsed 0.8s
+[02:11:58]   test_0005: 2429/2429 tasks; rollout elapsed 1.0s
+[02:11:58] Rollout test_0005: 2429 tasks
+[02:11:58]   test_0005: 500/2429 tasks; rollout elapsed 0.2s
+[02:11:58]   test_0005: 1000/2429 tasks; rollout elapsed 0.4s
+[02:11:58]   test_0005: 1500/2429 tasks; rollout elapsed 0.6s
+[02:11:58]   test_0005: 2000/2429 tasks; rollout elapsed 0.8s
+[02:11:59]   test_0005: 2429/2429 tasks; rollout elapsed 1.0s
+[02:11:59] Rollout test_0005: 2429 tasks
+[02:11:59]   test_0005: 500/2429 tasks; rollout elapsed 0.2s
+[02:11:59]   test_0005: 1000/2429 tasks; rollout elapsed 0.4s
+[02:11:59]   test_0005: 1500/2429 tasks; rollout elapsed 0.6s
+[02:11:59]   test_0005: 2000/2429 tasks; rollout elapsed 0.8s
+[02:12:00]   test_0005: 2429/2429 tasks; rollout elapsed 1.0s
+[02:12:00] Rollout test_0005: 2429 tasks
+[02:12:00]   test_0005: 500/2429 tasks; rollout elapsed 0.2s
+[02:12:00]   test_0005: 1000/2429 tasks; rollout elapsed 0.4s
+[02:12:00]   test_0005: 1500/2429 tasks; rollout elapsed 0.6s
+[02:12:00]   test_0005: 2000/2429 tasks; rollout elapsed 0.8s
+[02:12:01]   test_0005: 2429/2429 tasks; rollout elapsed 1.0s
+[02:12:01] Rollout test_0006: 2550 tasks
+[02:12:01] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 0, 442, 8151, 5.88
+[02:12:02]   test_0006: 500/2550 tasks; rollout elapsed 1.8s
+[02:12:04]   test_0006: 1000/2550 tasks; rollout elapsed 3.6s
+[02:12:06]   test_0006: 1500/2550 tasks; rollout elapsed 5.3s
+[02:12:08]   test_0006: 2000/2550 tasks; rollout elapsed 6.9s
+[02:12:09]   test_0006: 2500/2550 tasks; rollout elapsed 8.4s
+[02:12:09]   test_0006: 2550/2550 tasks; rollout elapsed 8.6s
+[02:12:09] Rollout test_0006: 2550 tasks
+[02:12:09]   test_0006: 500/2550 tasks; rollout elapsed 0.2s
+[02:12:10]   test_0006: 1000/2550 tasks; rollout elapsed 0.4s
+[02:12:10]   test_0006: 1500/2550 tasks; rollout elapsed 0.6s
+[02:12:10]   test_0006: 2000/2550 tasks; rollout elapsed 0.8s
+[02:12:10]   test_0006: 2500/2550 tasks; rollout elapsed 1.0s
+[02:12:10]   test_0006: 2550/2550 tasks; rollout elapsed 1.0s
+[02:12:10] Rollout test_0006: 2550 tasks
+[02:12:10]   test_0006: 500/2550 tasks; rollout elapsed 0.2s
+[02:12:11]   test_0006: 1000/2550 tasks; rollout elapsed 0.4s
+[02:12:11]   test_0006: 1500/2550 tasks; rollout elapsed 0.6s
+[02:12:11]   test_0006: 2000/2550 tasks; rollout elapsed 0.8s
+[02:12:11]   test_0006: 2500/2550 tasks; rollout elapsed 1.0s
+[02:12:11]   test_0006: 2550/2550 tasks; rollout elapsed 1.0s
+[02:12:11] Rollout test_0006: 2550 tasks
+[02:12:11]   test_0006: 500/2550 tasks; rollout elapsed 0.2s
+[02:12:12]   test_0006: 1000/2550 tasks; rollout elapsed 0.4s
+[02:12:12]   test_0006: 1500/2550 tasks; rollout elapsed 0.6s
+[02:12:12]   test_0006: 2000/2550 tasks; rollout elapsed 0.8s
+[02:12:12]   test_0006: 2500/2550 tasks; rollout elapsed 1.0s
+[02:12:12]   test_0006: 2550/2550 tasks; rollout elapsed 1.0s
+[02:12:12] Rollout test_0006: 2550 tasks
+[02:12:13]   test_0006: 500/2550 tasks; rollout elapsed 0.2s
+[02:12:13]   test_0006: 1000/2550 tasks; rollout elapsed 0.4s
+[02:12:13]   test_0006: 1500/2550 tasks; rollout elapsed 0.6s
+[02:12:13]   test_0006: 2000/2550 tasks; rollout elapsed 0.8s
+[02:12:13]   test_0006: 2500/2550 tasks; rollout elapsed 1.0s
+[02:12:13]   test_0006: 2550/2550 tasks; rollout elapsed 1.0s
+[02:12:13] Rollout test_0006: 2550 tasks
+[02:12:14]   test_0006: 500/2550 tasks; rollout elapsed 0.2s
+[02:12:14]   test_0006: 1000/2550 tasks; rollout elapsed 0.4s
+[02:12:14]   test_0006: 1500/2550 tasks; rollout elapsed 0.6s
+[02:12:14]   test_0006: 2000/2550 tasks; rollout elapsed 0.8s
+[02:12:14]   test_0006: 2500/2550 tasks; rollout elapsed 1.0s
+[02:12:14]   test_0006: 2550/2550 tasks; rollout elapsed 1.0s
+[02:12:14] Rollout test_0007: 2546 tasks
+[02:12:16]   test_0007: 500/2546 tasks; rollout elapsed 1.8s
+[02:12:18]   test_0007: 1000/2546 tasks; rollout elapsed 3.5s
+[02:12:20]   test_0007: 1500/2546 tasks; rollout elapsed 5.1s
+[02:12:21] GPU heartbeat: utilization %, VRAM used/total MiB, power W = 8, 442, 8151, 16.50
+[02:12:21]   test_0007: 2000/2546 tasks; rollout elapsed 6.7s
+[02:12:23]   test_0007: 2500/2546 tasks; rollout elapsed 8.4s
+[02:12:23]   test_0007: 2546/2546 tasks; rollout elapsed 8.6s
+[02:12:23] Rollout test_0007: 2546 tasks
+[02:12:23]   test_0007: 500/2546 tasks; rollout elapsed 0.2s
+[02:12:23]   test_0007: 1000/2546 tasks; rollout elapsed 0.4s
+[02:12:24]   test_0007: 1500/2546 tasks; rollout elapsed 0.6s
+[02:12:24]   test_0007: 2000/2546 tasks; rollout elapsed 0.9s
+[02:12:24]   test_0007: 2500/2546 tasks; rollout elapsed 1.2s
+[02:12:24]   test_0007: 2546/2546 tasks; rollout elapsed 1.2s
+[02:12:24] Rollout test_0007: 2546 tasks
+[02:12:24]   test_0007: 500/2546 tasks; rollout elapsed 0.2s
+[02:12:25]   test_0007: 1000/2546 tasks; rollout elapsed 0.4s
+[02:12:25]   test_0007: 1500/2546 tasks; rollout elapsed 0.6s
+[02:12:25]   test_0007: 2000/2546 tasks; rollout elapsed 0.9s
+[02:12:25]   test_0007: 2500/2546 tasks; rollout elapsed 1.1s
+[02:12:25]   test_0007: 2546/2546 tasks; rollout elapsed 1.1s
+[02:12:25] Rollout test_0007: 2546 tasks
+[02:12:26]   test_0007: 500/2546 tasks; rollout elapsed 0.2s
+[02:12:26]   test_0007: 1000/2546 tasks; rollout elapsed 0.6s
+[02:12:26]   test_0007: 1500/2546 tasks; rollout elapsed 0.8s
+[02:12:26]   test_0007: 2000/2546 tasks; rollout elapsed 1.0s
+[02:12:27]   test_0007: 2500/2546 tasks; rollout elapsed 1.2s
+[02:12:27]   test_0007: 2546/2546 tasks; rollout elapsed 1.2s
+[02:12:27] Rollout test_0007: 2546 tasks
+[02:12:27]   test_0007: 500/2546 tasks; rollout elapsed 0.3s
+[02:12:27]   test_0007: 1000/2546 tasks; rollout elapsed 0.5s
+[02:12:27]   test_0007: 1500/2546 tasks; rollout elapsed 0.8s
+[02:12:28]   test_0007: 2000/2546 tasks; rollout elapsed 1.0s
+[02:12:28]   test_0007: 2500/2546 tasks; rollout elapsed 1.2s
+[02:12:28]   test_0007: 2546/2546 tasks; rollout elapsed 1.3s
+[02:12:28] Rollout test_0007: 2546 tasks
+[02:12:28]   test_0007: 500/2546 tasks; rollout elapsed 0.2s
+[02:12:28]   test_0007: 1000/2546 tasks; rollout elapsed 0.4s
+[02:12:29]   test_0007: 1500/2546 tasks; rollout elapsed 0.7s
+[02:12:29]   test_0007: 2000/2546 tasks; rollout elapsed 0.9s
+[02:12:29]   test_0007: 2500/2546 tasks; rollout elapsed 1.1s
+[02:12:29]   test_0007: 2546/2546 tasks; rollout elapsed 1.1s
+Evaluated LRU/tight/seed 0
+[02:12:29] Rollout test_0000: 2465 tasks
+[02:12:31]   test_0000: 500/2465 tasks; rollout elapsed 2.0s
+[02:12:33]   test_0000: 1000/2465 tasks; rollout elapsed 3.6s
+[02:12:35]   test_0000: 1500/2465 tasks; rollout elapsed 5.2s
+[02:12:36]   test_0000: 2000/2465 tasks; rollout elapsed 6.7s
+[02:12:38]   test_0000: 2465/2465 tasks; rollout elapsed 8.2s
+[02:12:38] Agent: {'avg_latency': 10.213179370906818, 'completion_ratio': 0.9450302590765568, 'hit_rate': 0.5390901461499182, 'rejection_rate': 0.0013424821152820177, 'evictions': 430.125}
+[02:12:38] Greedy_latency: {'avg_latency': 8.317113710398516, 'completion_ratio': 0.9690180408290003, 'hit_rate': 0.5789309939563551, 'rejection_rate': 0.0006075656974425261, 'evictions': 400.25}
+[02:12:38] Image_priority: {'avg_latency': 9.869167904944995, 'completion_ratio': 0.9495374639430415, 'hit_rate': 0.6037853920751776, 'rejection_rate': 0.0002502128800430255, 'evictions': 390.875}
+[02:12:38] Least_load: {'avg_latency': 32.9522077056593, 'completion_ratio': 0.616240560037538, 'hit_rate': 0.11227802790894809, 'rejection_rate': 0.11358187301819046, 'evictions': 899.125}
+[02:12:38] Greedy_resources: {'avg_latency': 28.438533053901295, 'completion_ratio': 0.6738220855668402, 'hit_rate': 0.12626953189529475, 'rejection_rate': 0.04674578145301412, 'evictions': 784.25}
+[02:12:38] Random: {'avg_latency': 32.41822633099392, 'completion_ratio': 0.6272451686189126, 'hit_rate': 0.11028863471957563, 'rejection_rate': 0.08622195412599723, 'evictions': 867.875}
+[02:12:38] BENCHMARK COMPLETE; report: outputs/gpu_benchmark/benchmark_summary.json
+[02:12:39] Pipeline finished successfully. Results are in benchmark_summary.json.

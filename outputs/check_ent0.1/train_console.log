@@ -1,0 +1,163 @@
+Device: [CudaDevice(id=0)] | 12 agents (policies x disks x seeds) | 8 parallel envs each | 2000 tasks/episode | 30 iterations = 240 episodes per agent
+Validation baselines computed in 4.6s
+[iter    1/30] episodes     8/240 |  14.8s/it | elapsed 0m14s | ETA ... | train: lat 10.08 on-time 0.408 hit 0.468 | critic 1.452 alpha 0.0488 ent 1.62
+[iter    2/30] episodes    16/240 |  10.8s/it | elapsed 0m25s | ETA 5m59s | train: lat 1.74 on-time 0.902 hit 0.720 | critic 0.407 alpha 0.0464 ent 0.89
+[iter    3/30] episodes    24/240 |  10.8s/it | elapsed 0m36s | ETA 5m28s | train: lat 1.73 on-time 0.905 hit 0.768 | critic 0.202 alpha 0.0440 ent 0.71
+  validation @ 24 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.383 vs  2.406 | 0.840 vs 0.842  *
+    LRU  medium s0:  1.650 vs  1.559 | 0.925 vs 0.931
+    LRU  large  s0:  1.306 vs  1.283 | 0.956 vs 0.956
+    LFU  tight  s0:  2.410 vs  2.385 | 0.840 vs 0.847
+    LFU  medium s0:  1.554 vs  1.593 | 0.930 vs 0.928  *
+    LFU  large  s0:  1.275 vs  1.283 | 0.956 vs 0.956  *
+    FIFO tight  s0:  2.421 vs  2.440 | 0.841 vs 0.840  *
+    FIFO medium s0:  1.726 vs  1.614 | 0.917 vs 0.926
+    FIFO large  s0:  1.317 vs  1.283 | 0.955 vs 0.956
+    GDSF tight  s0:  2.322 vs  2.376 | 0.852 vs 0.848  *
+    GDSF medium s0:  1.581 vs  1.613 | 0.929 vs 0.925  *
+    GDSF large  s0:  1.288 vs  1.283 | 0.955 vs 0.956
+[iter    4/30] episodes    32/240 |  10.8s/it | elapsed 0m48s | ETA 5m13s | train: lat 1.73 on-time 0.909 hit 0.774 | critic 0.142 alpha 0.0417 ent 0.64
+[iter    5/30] episodes    40/240 |  10.8s/it | elapsed 0m58s | ETA 4m54s | train: lat 1.52 on-time 0.932 hit 0.782 | critic 0.162 alpha 0.0397 ent 0.55
+[iter    6/30] episodes    48/240 |  10.8s/it | elapsed 1m09s | ETA 4m39s | train: lat 1.59 on-time 0.922 hit 0.779 | critic 0.158 alpha 0.0378 ent 0.51
+  validation @ 48 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.330 vs  2.406 | 0.847 vs 0.842  *
+    LRU  medium s0:  1.554 vs  1.559 | 0.933 vs 0.931  *
+    LRU  large  s0:  1.331 vs  1.283 | 0.955 vs 0.956
+    LFU  tight  s0:  2.288 vs  2.385 | 0.858 vs 0.847  *
+    LFU  medium s0:  1.538 vs  1.593 | 0.935 vs 0.928  *
+    LFU  large  s0:  1.292 vs  1.283 | 0.958 vs 0.956
+    FIFO tight  s0:  2.362 vs  2.440 | 0.848 vs 0.840  *
+    FIFO medium s0:  1.657 vs  1.614 | 0.921 vs 0.926
+    FIFO large  s0:  1.272 vs  1.283 | 0.956 vs 0.956  *
+    GDSF tight  s0:  2.272 vs  2.376 | 0.864 vs 0.848  *
+    GDSF medium s0:  1.617 vs  1.613 | 0.926 vs 0.925
+    GDSF large  s0:  1.329 vs  1.283 | 0.953 vs 0.956
+[iter    7/30] episodes    56/240 |  10.8s/it | elapsed 1m21s | ETA 4m27s | train: lat 1.54 on-time 0.928 hit 0.786 | critic 0.172 alpha 0.0360 ent 0.48
+[iter    8/30] episodes    64/240 |  10.8s/it | elapsed 1m32s | ETA 4m13s | train: lat 1.53 on-time 0.933 hit 0.790 | critic 0.172 alpha 0.0343 ent 0.45
+[iter    9/30] episodes    72/240 |  10.8s/it | elapsed 1m43s | ETA 4m00s | train: lat 1.47 on-time 0.942 hit 0.798 | critic 0.170 alpha 0.0327 ent 0.42
+  validation @ 72 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.258 vs  2.406 | 0.859 vs 0.842  *
+    LRU  medium s0:  1.587 vs  1.559 | 0.933 vs 0.931
+    LRU  large  s0:  1.310 vs  1.283 | 0.958 vs 0.956
+    LFU  tight  s0:  2.225 vs  2.385 | 0.859 vs 0.847  *
+    LFU  medium s0:  1.584 vs  1.593 | 0.930 vs 0.928  *
+    LFU  large  s0:  1.309 vs  1.283 | 0.957 vs 0.956
+    FIFO tight  s0:  2.389 vs  2.440 | 0.847 vs 0.840  *
+    FIFO medium s0:  1.616 vs  1.614 | 0.931 vs 0.926
+    FIFO large  s0:  1.304 vs  1.283 | 0.958 vs 0.956
+    GDSF tight  s0:  2.258 vs  2.376 | 0.859 vs 0.848  *
+    GDSF medium s0:  1.613 vs  1.613 | 0.928 vs 0.925
+    GDSF large  s0:  1.319 vs  1.283 | 0.952 vs 0.956
+[iter   10/30] episodes    80/240 |  10.8s/it | elapsed 1m54s | ETA 3m49s | train: lat 1.54 on-time 0.933 hit 0.791 | critic 0.183 alpha 0.0312 ent 0.40
+[iter   11/30] episodes    88/240 |  10.8s/it | elapsed 2m05s | ETA 3m36s | train: lat 1.41 on-time 0.945 hit 0.811 | critic 0.191 alpha 0.0298 ent 0.38
+[iter   12/30] episodes    96/240 |  10.8s/it | elapsed 2m16s | ETA 3m24s | train: lat 1.38 on-time 0.946 hit 0.813 | critic 0.183 alpha 0.0286 ent 0.37
+  validation @ 96 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.198 vs  2.406 | 0.867 vs 0.842  *
+    LRU  medium s0:  1.589 vs  1.559 | 0.930 vs 0.931
+    LRU  large  s0:  1.360 vs  1.283 | 0.953 vs 0.956
+    LFU  tight  s0:  2.211 vs  2.385 | 0.860 vs 0.847  *
+    LFU  medium s0:  1.559 vs  1.593 | 0.931 vs 0.928  *
+    LFU  large  s0:  1.302 vs  1.283 | 0.957 vs 0.956
+    FIFO tight  s0:  2.206 vs  2.440 | 0.863 vs 0.840  *
+    FIFO medium s0:  1.648 vs  1.614 | 0.923 vs 0.926
+    FIFO large  s0:  1.347 vs  1.283 | 0.952 vs 0.956
+    GDSF tight  s0:  2.279 vs  2.376 | 0.860 vs 0.848  *
+    GDSF medium s0:  1.532 vs  1.613 | 0.936 vs 0.925  *
+    GDSF large  s0:  1.376 vs  1.283 | 0.950 vs 0.956
+[iter   13/30] episodes   104/240 |  10.8s/it | elapsed 2m27s | ETA 3m13s | train: lat 1.62 on-time 0.923 hit 0.793 | critic 0.205 alpha 0.0275 ent 0.34
+[iter   14/30] episodes   112/240 |  10.8s/it | elapsed 2m38s | ETA 3m01s | train: lat 1.73 on-time 0.909 hit 0.788 | critic 0.271 alpha 0.0266 ent 0.32
+[iter   15/30] episodes   120/240 |  10.8s/it | elapsed 2m49s | ETA 2m49s | train: lat 1.57 on-time 0.927 hit 0.803 | critic 0.302 alpha 0.0260 ent 0.30
+  validation @ 120 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.201 vs  2.406 | 0.867 vs 0.842  *
+    LRU  medium s0:  1.586 vs  1.559 | 0.933 vs 0.931
+    LRU  large  s0:  1.380 vs  1.283 | 0.951 vs 0.956
+    LFU  tight  s0:  2.201 vs  2.385 | 0.866 vs 0.847  *
+    LFU  medium s0:  1.560 vs  1.593 | 0.937 vs 0.928  *
+    LFU  large  s0:  1.315 vs  1.283 | 0.955 vs 0.956
+    FIFO tight  s0:  2.266 vs  2.440 | 0.859 vs 0.840  *
+    FIFO medium s0:  1.611 vs  1.614 | 0.930 vs 0.926  *
+    FIFO large  s0:  1.327 vs  1.283 | 0.956 vs 0.956
+    GDSF tight  s0:  2.139 vs  2.376 | 0.872 vs 0.848  *
+    GDSF medium s0:  1.507 vs  1.613 | 0.939 vs 0.925  *
+    GDSF large  s0:  1.412 vs  1.283 | 0.946 vs 0.956
+[iter   16/30] episodes   128/240 |  10.8s/it | elapsed 3m00s | ETA 2m38s | train: lat 1.51 on-time 0.932 hit 0.807 | critic 0.294 alpha 0.0254 ent 0.29
+[iter   17/30] episodes   136/240 |  10.8s/it | elapsed 3m11s | ETA 2m26s | train: lat 1.45 on-time 0.943 hit 0.814 | critic 0.285 alpha 0.0250 ent 0.28
+[iter   18/30] episodes   144/240 |  10.8s/it | elapsed 3m22s | ETA 2m15s | train: lat 1.47 on-time 0.945 hit 0.814 | critic 0.276 alpha 0.0247 ent 0.28
+  validation @ 144 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.192 vs  2.406 | 0.868 vs 0.842  *
+    LRU  medium s0:  1.542 vs  1.559 | 0.936 vs 0.931  *
+    LRU  large  s0:  1.349 vs  1.283 | 0.955 vs 0.956
+    LFU  tight  s0:  2.135 vs  2.385 | 0.872 vs 0.847  *
+    LFU  medium s0:  1.616 vs  1.593 | 0.931 vs 0.928
+    LFU  large  s0:  1.359 vs  1.283 | 0.954 vs 0.956
+    FIFO tight  s0:  2.194 vs  2.440 | 0.865 vs 0.840  *
+    FIFO medium s0:  1.561 vs  1.614 | 0.934 vs 0.926  *
+    FIFO large  s0:  1.335 vs  1.283 | 0.953 vs 0.956
+    GDSF tight  s0:  2.183 vs  2.376 | 0.869 vs 0.848  *
+    GDSF medium s0:  1.491 vs  1.613 | 0.939 vs 0.925  *
+    GDSF large  s0:  1.330 vs  1.283 | 0.955 vs 0.956
+[iter   19/30] episodes   152/240 |  10.8s/it | elapsed 3m34s | ETA 2m03s | train: lat 1.43 on-time 0.944 hit 0.819 | critic 0.281 alpha 0.0245 ent 0.26
+[iter   20/30] episodes   160/240 |  10.8s/it | elapsed 3m44s | ETA 1m52s | train: lat 1.51 on-time 0.935 hit 0.811 | critic 0.297 alpha 0.0247 ent 0.26
+[iter   21/30] episodes   168/240 |  10.8s/it | elapsed 3m55s | ETA 1m41s | train: lat 1.66 on-time 0.921 hit 0.799 | critic 0.337 alpha 0.0250 ent 0.26
+  validation @ 168 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.206 vs  2.406 | 0.862 vs 0.842  *
+    LRU  medium s0:  1.571 vs  1.559 | 0.936 vs 0.931
+    LRU  large  s0:  1.314 vs  1.283 | 0.956 vs 0.956
+    LFU  tight  s0:  2.199 vs  2.385 | 0.866 vs 0.847  *
+    LFU  medium s0:  1.512 vs  1.593 | 0.943 vs 0.928  *
+    LFU  large  s0:  1.390 vs  1.283 | 0.950 vs 0.956
+    FIFO tight  s0:  2.324 vs  2.440 | 0.849 vs 0.840  *
+    FIFO medium s0:  1.678 vs  1.614 | 0.925 vs 0.926
+    FIFO large  s0:  1.368 vs  1.283 | 0.952 vs 0.956
+    GDSF tight  s0:  2.190 vs  2.376 | 0.861 vs 0.848  *
+    GDSF medium s0:  1.559 vs  1.613 | 0.933 vs 0.925  *
+    GDSF large  s0:  1.365 vs  1.283 | 0.955 vs 0.956
+[iter   22/30] episodes   176/240 |  10.8s/it | elapsed 4m07s | ETA 1m29s | train: lat 1.63 on-time 0.928 hit 0.805 | critic 0.385 alpha 0.0255 ent 0.25
+[iter   23/30] episodes   184/240 |  10.8s/it | elapsed 4m18s | ETA 1m18s | train: lat 1.57 on-time 0.935 hit 0.814 | critic 0.386 alpha 0.0263 ent 0.25
+[iter   24/30] episodes   192/240 |  10.8s/it | elapsed 4m29s | ETA 1m07s | train: lat 1.58 on-time 0.932 hit 0.815 | critic 0.381 alpha 0.0274 ent 0.25
+  validation @ 192 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.192 vs  2.406 | 0.863 vs 0.842  *
+    LRU  medium s0:  1.491 vs  1.559 | 0.943 vs 0.931  *
+    LRU  large  s0:  1.381 vs  1.283 | 0.951 vs 0.956
+    LFU  tight  s0:  2.122 vs  2.385 | 0.872 vs 0.847  *
+    LFU  medium s0:  1.566 vs  1.593 | 0.934 vs 0.928  *
+    LFU  large  s0:  1.398 vs  1.283 | 0.950 vs 0.956
+    FIFO tight  s0:  2.234 vs  2.440 | 0.859 vs 0.840  *
+    FIFO medium s0:  1.673 vs  1.614 | 0.924 vs 0.926
+    FIFO large  s0:  1.410 vs  1.283 | 0.948 vs 0.956
+    GDSF tight  s0:  2.198 vs  2.376 | 0.863 vs 0.848  *
+    GDSF medium s0:  1.598 vs  1.613 | 0.931 vs 0.925  *
+    GDSF large  s0:  1.385 vs  1.283 | 0.953 vs 0.956
+[iter   25/30] episodes   200/240 |  10.8s/it | elapsed 4m40s | ETA 0m56s | train: lat 1.47 on-time 0.940 hit 0.816 | critic 0.389 alpha 0.0285 ent 0.26
+[iter   26/30] episodes   208/240 |  10.8s/it | elapsed 4m51s | ETA 0m44s | train: lat 1.57 on-time 0.927 hit 0.812 | critic 0.395 alpha 0.0291 ent 0.26
+[iter   27/30] episodes   216/240 |  10.8s/it | elapsed 5m02s | ETA 0m33s | train: lat 1.57 on-time 0.929 hit 0.817 | critic 0.408 alpha 0.0292 ent 0.27
+  validation @ 216 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.206 vs  2.406 | 0.865 vs 0.842  *
+    LRU  medium s0:  1.510 vs  1.559 | 0.939 vs 0.931  *
+    LRU  large  s0:  1.373 vs  1.283 | 0.952 vs 0.956
+    LFU  tight  s0:  2.206 vs  2.385 | 0.862 vs 0.847  *
+    LFU  medium s0:  1.597 vs  1.593 | 0.929 vs 0.928
+    LFU  large  s0:  1.451 vs  1.283 | 0.943 vs 0.956
+    FIFO tight  s0:  2.215 vs  2.440 | 0.862 vs 0.840  *
+    FIFO medium s0:  1.600 vs  1.614 | 0.930 vs 0.926  *
+    FIFO large  s0:  1.406 vs  1.283 | 0.948 vs 0.956
+    GDSF tight  s0:  2.165 vs  2.376 | 0.863 vs 0.848  *
+    GDSF medium s0:  1.576 vs  1.613 | 0.933 vs 0.925  *
+    GDSF large  s0:  1.379 vs  1.283 | 0.950 vs 0.956
+[iter   28/30] episodes   224/240 |  10.8s/it | elapsed 5m13s | ETA 0m22s | train: lat 1.47 on-time 0.936 hit 0.819 | critic 0.407 alpha 0.0295 ent 0.26
+[iter   29/30] episodes   232/240 |  10.8s/it | elapsed 5m24s | ETA 0m11s | train: lat 1.54 on-time 0.936 hit 0.819 | critic 0.418 alpha 0.0299 ent 0.27
+[iter   30/30] episodes   240/240 |  10.8s/it | elapsed 5m35s | ETA 0m00s | train: lat 1.55 on-time 0.930 hit 0.809 | critic 0.448 alpha 0.0298 ent 0.27
+  validation @ 240 episodes (agent vs Greedy_latency, avg latency | on-time):
+    LRU  tight  s0:  2.150 vs  2.406 | 0.872 vs 0.842  *
+    LRU  medium s0:  1.583 vs  1.559 | 0.933 vs 0.931
+    LRU  large  s0:  1.399 vs  1.283 | 0.949 vs 0.956
+    LFU  tight  s0:  2.220 vs  2.385 | 0.863 vs 0.847  *
+    LFU  medium s0:  1.553 vs  1.593 | 0.934 vs 0.928  *
+    LFU  large  s0:  1.454 vs  1.283 | 0.946 vs 0.956
+    FIFO tight  s0:  2.280 vs  2.440 | 0.857 vs 0.840  *
+    FIFO medium s0:  1.615 vs  1.614 | 0.928 vs 0.926
+    FIFO large  s0:  1.386 vs  1.283 | 0.954 vs 0.956
+    GDSF tight  s0:  2.208 vs  2.376 | 0.858 vs 0.848  *
+    GDSF medium s0:  1.546 vs  1.613 | 0.932 vs 0.925  *
+    GDSF large  s0:  1.376 vs  1.283 | 0.950 vs 0.956
+Training done in 5m36s; checkpoints: outputs/check_ent0.1/models.pkl

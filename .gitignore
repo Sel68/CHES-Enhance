@@ -2,6 +2,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 data/
-outputs/
-outputs_*/
+# Checkpoints (outputs/run/models.pkl is 140 MB, above GitHub's 100 MB file limit)
 *.pkl
+*.tmp
